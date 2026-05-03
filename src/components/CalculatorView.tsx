@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { 
   X, 
   RefreshCcw, 
@@ -26,26 +26,51 @@ export default function CalculatorView({ settings, setSettings, onSave }: Calcul
   const [baseSalary, setBaseSalary] = useState(settings.baseSalary);
   const [isEditingSalary, setIsEditingSalary] = useState(false);
 
+  const [showOvertimeForm, setShowOvertimeForm] = useState(false);
+  const [overtimeStart, setOvertimeStart] = useState('18:00');
+  const [overtimeEnd, setOvertimeEnd] = useState('21:00');
+  const [overtimeType, setOvertimeType] = useState<'Workday' | 'Weekend' | 'Holiday'>('Workday');
+
   const dailyPay = baseSalary / 21.75;
   const hourlyPay = dailyPay / hours;
   const socialSecurity = baseSalary * 0.225;
   const netSalary = baseSalary - socialSecurity;
 
+  const startDate = new Date(`2000-01-01T${overtimeStart}`);
+  const endDate = new Date(`2000-01-01T${overtimeEnd}`);
+  let duration = (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60);
+  if (duration < 0) duration += 24; // next day
+  if (duration < 0 || isNaN(duration)) duration = 0;
+
+  const multiplier = overtimeType === 'Workday' ? 1.5 : overtimeType === 'Weekend' ? 2 : 3;
+  const overtimePay = hourlyPay * duration * multiplier;
+
+  const handleSaveOvertime = () => {
+    onSave({
+      id: Math.random().toString(36).substr(2, 9),
+      date: new Date().toISOString().split('T')[0],
+      type: 'Overtime',
+      subtype: overtimeType,
+      duration: duration,
+      estimatedPay: overtimePay
+    });
+    setShowOvertimeForm(false);
+  };
+
   const handleSave = () => {
-    // Just a mock save for now that adds to the history logic in App
     onSave({
       id: Math.random().toString(36).substr(2, 9),
       date: new Date().toISOString().split('T')[0],
       type: 'Overtime',
       subtype: 'Workday',
-      duration: 2,
-      estimatedPay: hourlyPay * 2 * 1.5
+      duration: 8,
+      estimatedPay: dailyPay
     });
     alert('已成功保存至本月明细！');
   };
 
   return (
-    <div className="flex flex-col gap-8 px-5 pb-52">
+    <div className="flex flex-col gap-8 px-5 pb-96">
       {/* Salary Settings Section */}
       <section className="flex flex-col gap-3">
         <h2 className="text-[14px] font-bold text-zinc-400 uppercase tracking-widest pl-2">
@@ -159,7 +184,7 @@ export default function CalculatorView({ settings, setSettings, onSave }: Calcul
             <AttendanceButton icon={<CheckCircle2 strokeWidth={2.5} className="w-8 h-8 text-green-500" />} label="正常出勤" />
             <AttendanceButton icon={<Clock strokeWidth={2.5} className="w-8 h-8 text-orange-500" />} label="迟到/早退" />
             <AttendanceButton icon={<CalendarOff strokeWidth={2.5} className="w-8 h-8 text-red-500" />} label="请假/缺勤" />
-            <AttendanceButton icon={<Briefcase strokeWidth={2.5} className="w-8 h-8 text-primary" />} label="加班申请" />
+            <AttendanceButton icon={<Briefcase strokeWidth={2.5} className="w-8 h-8 text-primary" />} label="加班申请" onClick={() => setShowOvertimeForm(true)} />
           </div>
         </div>
       </section>
@@ -196,6 +221,87 @@ export default function CalculatorView({ settings, setSettings, onSave }: Calcul
           </div>
         </motion.div>
       </div>
+
+      {/* Overtime Modal */}
+      <AnimatePresence>
+        {showOvertimeForm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-end justify-center bg-zinc-900/40 backdrop-blur-sm sm:items-center p-4 pb-24"
+            onClick={() => setShowOvertimeForm(false)}
+          >
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-lg bg-white rounded-[32px] p-6 shadow-2xl flex flex-col gap-6"
+            >
+              <div className="flex justify-between items-center">
+                <h3 className="text-xl font-bold text-zinc-900">加班记录</h3>
+                <button onClick={() => setShowOvertimeForm(false)} className="p-2 bg-zinc-100 rounded-full text-zinc-500">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm font-bold text-zinc-500">加班类型</label>
+                  <div className="bg-zinc-100 p-1 rounded-2xl flex gap-1 inner-shadow">
+                    <ToggleOption active={overtimeType === 'Workday'} onClick={() => setOvertimeType('Workday')} label="工作日" />
+                    <ToggleOption active={overtimeType === 'Weekend'} onClick={() => setOvertimeType('Weekend')} label="周末" />
+                    <ToggleOption active={overtimeType === 'Holiday'} onClick={() => setOvertimeType('Holiday')} label="节假日" />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-2">
+                    <label className="text-sm font-bold text-zinc-500">开始时间</label>
+                    <input 
+                      type="time" 
+                      value={overtimeStart} 
+                      onChange={(e) => setOvertimeStart(e.target.value)}
+                      className="bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-lg font-mono w-full focus:outline-none focus:ring-2 focus:ring-primary/50" 
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label className="text-sm font-bold text-zinc-500">结束时间</label>
+                    <input 
+                      type="time" 
+                      value={overtimeEnd} 
+                      onChange={(e) => setOvertimeEnd(e.target.value)}
+                      className="bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-lg font-mono w-full focus:outline-none focus:ring-2 focus:ring-primary/50" 
+                    />
+                  </div>
+                </div>
+
+                <div className="bg-primary/5 rounded-2xl p-4 flex justify-between items-center mt-2 border border-primary/10">
+                  <div className="flex flex-col">
+                    <span className="text-xs font-bold text-primary/70 mb-1">预计加班时长</span>
+                    <span className="text-lg font-black text-primary">{duration.toFixed(1)} <span className="text-sm">小时</span></span>
+                  </div>
+                  <div className="flex flex-col text-right">
+                    <span className="text-xs font-bold text-primary/70 mb-1">预估加班费</span>
+                    <span className="text-2xl font-black text-primary tabular-nums">+{formatCurrency(overtimePay)}</span>
+                  </div>
+                </div>
+                
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleSaveOvertime}
+                  className="w-full h-14 bg-zinc-900 text-white rounded-2xl font-bold text-sm flex items-center justify-center mt-2 shadow-xl shadow-zinc-900/20"
+                >
+                  保存记录
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -217,10 +323,11 @@ function ToggleOption({ active, onClick, label }: { active: boolean, onClick: ()
   );
 }
 
-function AttendanceButton({ icon, label }: { icon: React.ReactNode, label: string }) {
+function AttendanceButton({ icon, label, onClick }: { icon: React.ReactNode, label: string, onClick?: () => void }) {
   return (
     <motion.button
       whileTap={{ scale: 0.95 }}
+      onClick={onClick}
       className="bg-white/40 border border-zinc-200/30 rounded-3xl p-5 flex flex-col items-center gap-3 hover:bg-white/80 transition-colors"
     >
       {icon}

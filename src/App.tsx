@@ -187,35 +187,35 @@ export default function App() {
       </main>
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 w-full z-50 glass h-20 rounded-t-[32px] flex justify-around items-center px-4 pb-6 pt-2">
+      <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-md z-50 bg-white/90 backdrop-blur-xl border border-white shadow-2xl shadow-zinc-200/50 h-[72px] rounded-full flex justify-around items-center px-2">
         <NavButton 
           active={activeView === 'home'} 
           onClick={() => setActiveView('home')} 
-          icon={<LayoutDashboard className="w-6 h-6" />} 
+          icon={<LayoutDashboard className="w-5 h-5" />} 
           label="首页" 
         />
         <NavButton 
           active={activeView === 'calendar'} 
           onClick={() => setActiveView('calendar')} 
-          icon={<Calendar className="w-6 h-6" />} 
+          icon={<Calendar className="w-5 h-5" />} 
           label="日历" 
         />
         <NavButton 
           active={activeView === 'calculator'} 
           onClick={() => setActiveView('calculator')} 
-          icon={<Calculator className="w-6 h-6" />} 
+          icon={<Calculator className="w-5 h-5" />} 
           label="计算器" 
         />
         <NavButton 
           active={activeView === 'history'} 
           onClick={() => setActiveView('history')} 
-          icon={<ReceiptText className="w-6 h-6" />} 
+          icon={<ReceiptText className="w-5 h-5" />} 
           label="明细" 
         />
         <NavButton 
           active={activeView === 'profile'} 
           onClick={() => setActiveView('profile')} 
-          icon={<User className="w-6 h-6" />} 
+          icon={<User className="w-5 h-5" />} 
           label="我的" 
         />
       </nav>
@@ -229,12 +229,34 @@ function NavButton({ active, onClick, icon, label }: { active: boolean, onClick:
       onClick={onClick}
       whileTap={{ scale: 0.9 }}
       className={cn(
-        "flex flex-col items-center justify-center p-2 rounded-full transition-all duration-200",
-        active ? "text-primary bg-primary/10" : "text-zinc-400"
+        "relative flex flex-col items-center justify-center gap-1 transition-all duration-300 w-[72px] h-full group z-10",
+        active ? "text-primary" : "text-zinc-500 hover:text-zinc-700"
       )}
     >
-      <span className={cn(active && "fill-current")}>{icon}</span>
-      <span className="text-[10px] font-medium mt-1">{label}</span>
+      <div className="relative flex items-center justify-center w-12 h-12">
+        {active && (
+          <motion.div
+            layoutId="nav-pill"
+            className="absolute inset-0 bg-primary/10 rounded-full z-0"
+            transition={{ type: "spring", stiffness: 400, damping: 30 }}
+          />
+        )}
+        <div className="z-10 transition-transform duration-200 flex items-center justify-center">
+          {React.cloneElement(icon as React.ReactElement, { className: cn((icon as any).props.className, "w-6 h-6", active ? "stroke-[2.5px]" : "stroke-2") })}
+        </div>
+      </div>
+      <AnimatePresence>
+        {!active && (
+          <motion.span 
+            initial={{ opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 5 }}
+            className="text-[10px] font-medium z-10 absolute bottom-1"
+          >
+            {label}
+          </motion.span>
+        )}
+      </AnimatePresence>
     </motion.button>
   );
 }
