@@ -6,7 +6,8 @@ import {
   FileText, 
   Edit2, 
   Trash2,
-  Calendar
+  Calendar,
+  Download
 } from 'lucide-react';
 import { MonthlySalary } from '../types';
 import { cn, formatCurrency } from '../lib/utils';
@@ -40,6 +41,33 @@ export default function HistoryView({ history, onViewDetail, onEdit, onDelete }:
   const [expandedId, setExpandedId] = useState<string | null>('1');
 
   const annualTotal = history.reduce((acc, curr) => acc + curr.net, 0);
+
+  const handleDownloadCSV = () => {
+    const headers = ['月份', '基本工资', '奖金', '五险一金', '个人所得税', '实发工资'];
+    const rows = history.map(item => [
+      item.month,
+      item.baseAmount,
+      item.bonus,
+      item.socialSecurity,
+      item.tax,
+      item.net
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.join(','))
+    ].join('\n');
+
+    // Add BOM for Excel UTF-8 compatibility
+    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `薪资报表_${selectedYear}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <motion.div 
@@ -82,6 +110,17 @@ export default function HistoryView({ history, onViewDetail, onEdit, onDelete }:
               <span className="text-lg font-black font-mono text-green-500">+12.5%</span>
             </div>
           </div>
+
+          {/* Download Action */}
+          <motion.button
+            whileHover={{ scale: 1.02, backgroundColor: 'rgba(59, 130, 246, 0.1)' }}
+            whileTap={{ scale: 0.98 }}
+            onClick={handleDownloadCSV}
+            className="w-full mt-6 py-3.5 rounded-2xl border-2 border-dashed border-primary/20 flex items-center justify-center gap-2 text-primary font-bold text-sm transition-all hover:border-primary/40"
+          >
+            <Download className="w-4 h-4" />
+            下载月度汇总报表 (CSV)
+          </motion.button>
         </div>
 
         {/* Year Selector Floating */}
@@ -108,7 +147,9 @@ export default function HistoryView({ history, onViewDetail, onEdit, onDelete }:
 
       {/* History Timeline - Tightened Proportions */}
       <motion.section 
-        variants={ITEM_VARIANTS}
+        variants={{
+          visible: { transition: { staggerChildren: 0.1 } }
+        }}
         className="space-y-4"
       >
         {history.map((item, index) => {

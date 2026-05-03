@@ -37,7 +37,7 @@ export default function SalaryDetailView({ record, onBack, onEdit }: SalaryDetai
                 text: `${yearDisplay}年${monthDisplay}实发工资: ¥${record.net}`,
               }).catch(console.error);
             } else {
-              alert('分享功能即将在您的设备上线');
+              console.warn('Share API not supported on this device');
             }
           }}
           className="p-2 rounded-full bg-primary/10 text-primary"

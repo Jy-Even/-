@@ -29,6 +29,21 @@ const themeLabels = {
   midnight: '午夜蓝',
 };
 
+const CONTAINER_VARIANTS = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+};
+
+const ITEM_VARIANTS = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } }
+};
+
 export default function ProfileView({ settings, setSettings, onNavigate, theme }: ProfileViewProps) {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -50,7 +65,12 @@ export default function ProfileView({ settings, setSettings, onNavigate, theme }
   };
 
   return (
-    <div className="flex flex-col gap-8 px-5 pb-20">
+    <motion.div 
+      initial="hidden"
+      animate="visible"
+      variants={CONTAINER_VARIANTS}
+      className="flex flex-col gap-8 px-5 pb-20"
+    >
       <AnimatePresence>
         {toastMessage && (
           <motion.div
@@ -81,7 +101,7 @@ export default function ProfileView({ settings, setSettings, onNavigate, theme }
         )}
       </AnimatePresence>
       {/* Profile Header */}
-      <header className="flex flex-row items-center gap-4 py-4 relative">
+      <motion.header variants={ITEM_VARIANTS} className="flex flex-row items-center gap-4 py-4 relative">
         <div className="absolute top-0 inset-x-0 h-40 bg-linear-to-b from-primary/10 to-transparent rounded-full blur-3xl -z-10"></div>
         
         <div className="relative">
@@ -100,48 +120,54 @@ export default function ProfileView({ settings, setSettings, onNavigate, theme }
           <h2 className="text-2xl font-black tracking-tight text-zinc-900">Jay Yu</h2>
           <p className="text-zinc-500 font-medium text-xs">欢迎回来</p>
         </div>
-      </header>
+      </motion.header>
 
       {/* Settings Groups */}
       <div className="space-y-6">
-        <h3 className="text-[13px] font-bold text-zinc-400 uppercase tracking-[0.2em] pl-2">个人设置</h3>
-        <SettingsGroup>
-          <SettingsItem 
-            icon={<CreditCard className="text-primary w-6 h-6" strokeWidth={2.5} />} 
-            label="薪资设置" 
-            onClick={() => onNavigate('salarySettings')}
-          />
-          <SettingsItem 
-            icon={<ShieldCheck className="text-primary w-6 h-6" strokeWidth={2.5} />} 
-            label="社保公积金" 
-            onClick={() => onNavigate('socialSecurity')}
-            border={false} 
-          />
-        </SettingsGroup>
+        <motion.h3 variants={ITEM_VARIANTS} className="text-[13px] font-bold text-zinc-400 uppercase tracking-[0.2em] pl-2">个人设置</motion.h3>
+        <motion.div variants={ITEM_VARIANTS}>
+          <SettingsGroup>
+            <SettingsItem 
+              icon={<CreditCard className="text-primary w-6 h-6" strokeWidth={2.5} />} 
+              label="薪资设置" 
+              onClick={() => onNavigate('salarySettings')}
+            />
+            <SettingsItem 
+              icon={<ShieldCheck className="text-primary w-6 h-6" strokeWidth={2.5} />} 
+              label="社保公积金" 
+              onClick={() => onNavigate('socialSecurity')}
+              border={false} 
+            />
+          </SettingsGroup>
+        </motion.div>
 
-        <SettingsGroup>
-          <SettingsItem icon={<Bell className="text-primary w-6 h-6" strokeWidth={2.5} />} label="消息通知">
-            <Toggle active={notificationsEnabled} onChange={handleToggleNotifications} />
-          </SettingsItem>
-          <SettingsItem icon={<RefreshCcw className="text-primary w-6 h-6" strokeWidth={2.5} />} label="数据同步" />
-          <SettingsItem 
-            icon={<Palette className="text-primary w-6 h-6" strokeWidth={2.5} />} 
-            label="外观设置" 
-            border={false}
-            onClick={() => onNavigate('appearanceSettings')}
-          >
-            <span className="text-sm font-bold text-zinc-400 flex items-center gap-1">
-               {themeLabels[theme] || '跟随系统'}
-               <ChevronRight className="w-4 h-4 text-zinc-300" />
-            </span>
-          </SettingsItem>
-        </SettingsGroup>
+        <motion.div variants={ITEM_VARIANTS}>
+          <SettingsGroup>
+            <SettingsItem icon={<Bell className="text-primary w-6 h-6" strokeWidth={2.5} />} label="消息通知">
+              <Toggle active={notificationsEnabled} onChange={handleToggleNotifications} />
+            </SettingsItem>
+            <SettingsItem icon={<RefreshCcw className="text-primary w-6 h-6" strokeWidth={2.5} />} label="数据同步" />
+            <SettingsItem 
+              icon={<Palette className="text-primary w-6 h-6" strokeWidth={2.5} />} 
+              label="外观设置" 
+              border={false}
+              onClick={() => onNavigate('appearanceSettings')}
+            >
+              <span className="text-sm font-bold text-zinc-400 flex items-center gap-1">
+                 {themeLabels[theme] || '跟随系统'}
+                 <ChevronRight className="w-4 h-4 text-zinc-300" />
+              </span>
+            </SettingsItem>
+          </SettingsGroup>
+        </motion.div>
 
-        <SettingsGroup>
-          <SettingsItem icon={<LogOut className="text-red-500 w-6 h-6" strokeWidth={2.5} />} label="退出账号" border={false} />
-        </SettingsGroup>
+        <motion.div variants={ITEM_VARIANTS}>
+          <SettingsGroup>
+            <SettingsItem icon={<LogOut className="text-red-500 w-6 h-6" strokeWidth={2.5} />} label="退出账号" border={false} />
+          </SettingsGroup>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 

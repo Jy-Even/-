@@ -22,10 +22,38 @@ interface SalarySettingsViewProps {
 export default function SalarySettingsView({ settings, onSave, onBack }: SalarySettingsViewProps) {
   const [localSettings, setLocalSettings] = useState<SalarySettings>({ ...settings });
   const [showFormula, setShowFormula] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
+  // Calculate current hourly rate from base salary
   const hourlyRate = localSettings.baseSalary / 21.75 / localSettings.dailyHours;
 
+  const handleBaseSalaryChange = (value: string) => {
+    const numValue = parseFloat(value);
+    if (value === '' || (numValue >= 0 && !isNaN(numValue))) {
+      setLocalSettings({ ...localSettings, baseSalary: value === '' ? 0 : numValue });
+      setError(null);
+    } else {
+      setError('请输入有效的基本薪资（非负数）');
+    }
+  };
+
+  const handleHourlyRateChange = (value: string) => {
+    const numValue = parseFloat(value);
+    if (value === '' || (numValue >= 0 && !isNaN(numValue))) {
+      // Synchronize base salary based on hourly rate
+      const newBaseSalary = value === '' ? 0 : numValue * 21.75 * localSettings.dailyHours;
+      setLocalSettings({ ...localSettings, baseSalary: Math.round(newBaseSalary) });
+      setError(null);
+    } else {
+      setError('请输入有效的时薪（非负数）');
+    }
+  };
+
   const handleSave = () => {
+    if (localSettings.baseSalary <= 0) {
+      setError('基本薪资必须大于 0');
+      return;
+    }
     onSave(localSettings);
     onBack();
   };
@@ -43,28 +71,50 @@ export default function SalarySettingsView({ settings, onSave, onBack }: SalaryS
         <h2 className="text-xl font-black">薪资设置</h2>
       </header>
 
-      <section className="space-y-6">
-        {/* Hourly Rate Display */}
-        <button 
-          onClick={() => setShowFormula(true)}
-          className="w-full text-left glass rounded-3xl p-6 flex flex-col justify-center bg-linear-to-br from-primary/5 to-transparent relative overflow-hidden transition-all hover:bg-primary/10 active:scale-[0.98]"
+      {error && (
+        <motion.div 
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-red-50 text-red-500 p-4 rounded-2xl text-xs font-bold flex items-center gap-2 border border-red-100"
         >
-          <div className="flex justify-between items-start mb-2">
-            <div className="text-[13px] font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-2">
-              当前计算时薪 <Info className="w-4 h-4 text-primary/60" />
+          <Info className="w-4 h-4 shrink-0" />
+          {error}
+        </motion.div>
+      )}
+
+      <section className="space-y-6">
+        {/* Hourly Rate Input Card */}
+        <div className="glass rounded-3xl p-6 bg-linear-to-br from-primary/5 to-transparent relative overflow-hidden border border-primary/10">
+          <div className="flex justify-between items-start mb-4">
+            <div className="flex flex-col">
+              <div className="text-[13px] font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-2">
+                期望计算时薪
+                <button onClick={() => setShowFormula(true)}>
+                  <Info className="w-4 h-4 text-primary/60 hover:text-primary transition-colors" />
+                </button>
+              </div>
+              <span className="text-[11px] text-zinc-400 mt-1">修改此项将自动同步基本薪资</span>
             </div>
+            <Clock className="w-5 h-5 text-primary/30" />
           </div>
-          <div className="flex items-baseline gap-1">
-            <span className="text-xl font-bold text-primary opacity-80">¥</span>
-            <div className="text-4xl font-black text-primary tracking-tighter">
-              {hourlyRate.toFixed(2)}
-            </div>
+          
+          <div className="flex items-center gap-2">
+            <span className="text-2xl font-bold text-primary opacity-80">¥</span>
+            <input 
+              type="number"
+              step="0.01"
+              value={hourlyRate === 0 ? '' : Number(hourlyRate.toFixed(2))}
+              onChange={(e) => handleHourlyRateChange(e.target.value)}
+              className="bg-transparent border-none focus:ring-0 text-4xl font-black text-primary tracking-tighter w-full p-0"
+              placeholder="0.00"
+            />
           </div>
-          <div className="text-xs font-medium text-primary/60 mt-2 flex items-center gap-1">
-            <Clock className="w-3 h-3" />
-            基于标准月计薪天数 21.75 天计算
+          
+          <div className="text-xs font-medium text-primary/60 mt-4 flex items-center gap-1.5 py-1 px-3 bg-primary/5 rounded-full w-fit">
+            <Briefcase className="w-3 h-3" />
+            基于月均 21.75 天及当前工时计算
           </div>
-        </button>
+        </div>
 
         <div className="glass rounded-3xl p-5 space-y-8 shadow-sm">
           <div className="flex flex-col gap-3">
@@ -72,12 +122,12 @@ export default function SalarySettingsView({ settings, onSave, onBack }: SalaryS
               <span className="text-[14px] font-bold text-zinc-800 tracking-wide pl-1">基本薪资 (税前)</span>
               <span className="text-[12px] text-zinc-400 pl-1">作为加班费、请假扣除的计算基数</span>
             </div>
-            <div className="flex items-center gap-3 bg-zinc-100 p-3 rounded-2xl inner-shadow">
+            <div className="flex items-center gap-3 bg-zinc-100 p-3 rounded-2xl inner-shadow border border-zinc-200/50">
                <span className="text-xl font-black text-zinc-400">¥</span>
                <input 
                  type="number" 
                  value={localSettings.baseSalary === 0 ? '' : localSettings.baseSalary}
-                 onChange={(e) => setLocalSettings({...localSettings, baseSalary: Number(e.target.value)})}
+                 onChange={(e) => handleBaseSalaryChange(e.target.value)}
                  className="bg-transparent border-none focus:ring-0 text-2xl font-black w-full p-0"
                  placeholder="0"
                />

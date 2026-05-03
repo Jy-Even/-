@@ -19,12 +19,28 @@ interface CalculatorViewProps {
   onSave: (record: SalaryRecord) => void;
 }
 
+const CONTAINER_VARIANTS = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+};
+
+const ITEM_VARIANTS = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } }
+};
+
 export default function CalculatorView({ settings, setSettings, onSave }: CalculatorViewProps) {
   const [activeMode, setActiveMode] = useState<'Monthly' | 'Annual'>(settings.salaryMode);
   const [activeSchedule, setActiveSchedule] = useState(settings.scheduleType);
   const [hours, setHours] = useState(settings.dailyHours);
   const [baseSalary, setBaseSalary] = useState(settings.baseSalary);
   const [isEditingSalary, setIsEditingSalary] = useState(false);
+  const [showToast, setShowToast] = useState(false);
 
   const [showOvertimeForm, setShowOvertimeForm] = useState(false);
   const [overtimeStart, setOvertimeStart] = useState('18:00');
@@ -32,9 +48,9 @@ export default function CalculatorView({ settings, setSettings, onSave }: Calcul
   const [overtimeType, setOvertimeType] = useState<'Workday' | 'Weekend' | 'Holiday'>('Workday');
 
   const dailyPay = baseSalary / 21.75;
-  const hourlyPay = dailyPay / hours;
+  const hourlyPay = hours > 0 ? dailyPay / hours : 0;
   const socialSecurity = baseSalary * 0.225;
-  const netSalary = baseSalary - socialSecurity;
+  const netSalary = Math.max(0, baseSalary - socialSecurity);
 
   const startDate = new Date(`2000-01-01T${overtimeStart}`);
   const endDate = new Date(`2000-01-01T${overtimeEnd}`);
@@ -55,9 +71,16 @@ export default function CalculatorView({ settings, setSettings, onSave }: Calcul
       estimatedPay: overtimePay
     });
     setShowOvertimeForm(false);
+    triggerToast();
+  };
+
+  const triggerToast = () => {
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3000);
   };
 
   const handleSave = () => {
+    if (baseSalary <= 0) return;
     onSave({
       id: Math.random().toString(36).substr(2, 9),
       date: new Date().toISOString().split('T')[0],
@@ -66,13 +89,42 @@ export default function CalculatorView({ settings, setSettings, onSave }: Calcul
       duration: 8,
       estimatedPay: dailyPay
     });
-    alert('已成功保存至本月明细！');
+    triggerToast();
+  };
+
+  const handleSalaryChange = (val: string) => {
+    const num = parseFloat(val);
+    if (val === '') {
+      setBaseSalary(0);
+    } else if (!isNaN(num)) {
+      setBaseSalary(Math.max(0, num));
+    }
   };
 
   return (
-    <div className="flex flex-col gap-8 px-5 pb-96">
+    <motion.div 
+      initial="hidden"
+      animate="visible"
+      variants={CONTAINER_VARIANTS}
+      className="flex flex-col gap-8 px-5 pb-96"
+    >
+      {/* Toast Notification */}
+      <AnimatePresence>
+        {showToast && (
+          <motion.div 
+            initial={{ opacity: 0, y: 50, x: '-50%' }}
+            animate={{ opacity: 1, y: 0, x: '-50%' }}
+            exit={{ opacity: 0, y: 20, x: '-50%' }}
+            className="fixed bottom-32 left-1/2 bg-zinc-800 text-pure-white px-6 py-3 rounded-full shadow-2xl z-[60] font-medium text-sm whitespace-nowrap flex items-center gap-2"
+          >
+            <CheckCircle2 className="w-4 h-4 text-green-400" />
+            已成功保存至本月明细
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Salary Settings Section */}
-      <section className="flex flex-col gap-3">
+      <motion.section variants={ITEM_VARIANTS} className="flex flex-col gap-3">
         <h2 className="text-[14px] font-bold text-zinc-400 uppercase tracking-widest pl-2">
           薪资设置
         </h2>
@@ -85,13 +137,14 @@ export default function CalculatorView({ settings, setSettings, onSave }: Calcul
                 <input
                   autoFocus
                   type="number"
-                  value={baseSalary}
-                  onChange={(e) => setBaseSalary(Number(e.target.value))}
+                  value={baseSalary === 0 ? '' : baseSalary}
+                  onChange={(e) => handleSalaryChange(e.target.value)}
                   onBlur={() => {
                     setIsEditingSalary(false);
                     setSettings({ ...settings, baseSalary });
                   }}
                   className="text-4xl font-black tracking-tight text-zinc-900 tabular-nums w-48 bg-transparent border-none focus:ring-0 p-0 text-center"
+                  placeholder="0"
                 />
               ) : (
                 <span className="text-5xl font-black tracking-tight text-zinc-900 tabular-nums">
@@ -120,10 +173,10 @@ export default function CalculatorView({ settings, setSettings, onSave }: Calcul
             />
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Work System Section */}
-      <section className="flex flex-col gap-3">
+      <motion.section variants={ITEM_VARIANTS} className="flex flex-col gap-3">
         <h2 className="text-[14px] font-bold text-zinc-400 uppercase tracking-widest pl-2">
           工时制度
         </h2>
@@ -172,10 +225,10 @@ export default function CalculatorView({ settings, setSettings, onSave }: Calcul
             </div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Attendance Picker */}
-      <section className="flex flex-col gap-3">
+      <motion.section variants={ITEM_VARIANTS} className="flex flex-col gap-3">
         <h2 className="text-[14px] font-bold text-zinc-400 uppercase tracking-widest pl-2">
           考勤记录
         </h2>
@@ -187,70 +240,97 @@ export default function CalculatorView({ settings, setSettings, onSave }: Calcul
             <AttendanceButton icon={<Briefcase strokeWidth={2.5} className="w-8 h-8 text-primary" />} label="加班申请" onClick={() => setShowOvertimeForm(true)} />
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Bottom Floating Result Panel */}
       <div className="fixed bottom-24 left-0 w-full px-5 z-40 pointer-events-none">
         <motion.div 
-          initial={{ y: 100, opacity: 0, scale: 0.95 }}
+          initial={{ y: 80, opacity: 0, scale: 0.98 }}
           animate={{ y: 0, opacity: 1, scale: 1 }}
           transition={{ 
             type: "spring",
-            damping: 25,
-            stiffness: 200,
-            delay: 0.1
+            damping: 20,
+            stiffness: 120,
+            delay: 0.05
           }}
-          className="max-w-lg mx-auto glass-elevated rounded-[32px] shadow-2xl overflow-hidden pointer-events-auto border-t border-white"
+          className="max-w-lg mx-auto relative group pointer-events-auto"
         >
-          <div className="p-6">
-            <motion.div 
-              initial="hidden"
-              animate="visible"
-              variants={{
-                hidden: { opacity: 0 },
-                visible: {
-                  opacity: 1,
-                  transition: {
-                    staggerChildren: 0.1,
-                    delayChildren: 0.3
+          {/* Subtle Glow Effect Behind */}
+          <div className="absolute -inset-1 bg-linear-to-r from-primary/10 via-primary/5 to-primary/10 blur-xl opacity-50 group-hover:opacity-75 transition-opacity" />
+          
+          <div className="relative glass-elevated rounded-[36px] shadow-[0_20px_50px_rgba(0,0,0,0.1)] overflow-hidden border border-white/50 dark:border-white/10">
+            <div className="p-6">
+              {/* Top Summary Stats */}
+              <motion.div 
+                initial="hidden"
+                animate="visible"
+                variants={{
+                  hidden: { opacity: 0 },
+                  visible: {
+                    opacity: 1,
+                    transition: {
+                      staggerChildren: 0.08,
+                      delayChildren: 0.2
+                    }
                   }
-                }
-              }}
-              className="grid grid-cols-3 gap-4 mb-6"
-            >
-              <ResultItem label="日均" value={`¥${dailyPay.toFixed(2)}`} />
-              <ResultItem label="时薪" value={`¥${hourlyPay.toFixed(2)}`} />
-              <ResultItem label="五险一金" value={`-¥${socialSecurity.toFixed(0)}`} color="text-red-500" />
-            </motion.div>
-
-            <motion.div 
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.4 }}
-              className="flex flex-col items-center justify-center py-2 mb-4"
-            >
-              <span className="text-[12px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-1">预计税后收入</span>
-              <motion.span 
-                key={netSalary}
-                initial={{ scale: 0.95, opacity: 0.8 }}
-                animate={{ scale: 1, opacity: 1 }}
-                className="text-4xl font-black tracking-tighter text-gradient leading-none tabular-nums mt-1"
+                }}
+                className="flex items-center justify-between px-2 mb-6"
               >
-                {formatCurrency(netSalary)}
-              </motion.span>
-            </motion.div>
+                <ResultItem label="日均收入" value={`¥${dailyPay.toFixed(2)}`} />
+                <div className="w-[1px] h-6 bg-zinc-200/50 dark:bg-white/10" />
+                <ResultItem label="每小时薪" value={`¥${hourlyPay.toFixed(2)}`} />
+                <div className="w-[1px] h-6 bg-zinc-200/50 dark:bg-white/10" />
+                <ResultItem label="扣除五险" value={`¥${socialSecurity.toFixed(0)}`} color="text-red-500" />
+              </motion.div>
 
-            <motion.button
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.6 }}
-              whileHover={{ scale: 1.02, backgroundColor: 'var(--color-primary-light)' }}
-              whileTap={{ scale: 0.98 }}
-              onClick={handleSave}
-              className="w-full h-14 bg-primary text-pure-white rounded-2xl font-bold text-sm flex items-center justify-center gap-3 shadow-xl shadow-primary/25 transition-all"
-            >
-              保存至本月
-            </motion.button>
+              {/* Central Result Display */}
+              <div className="relative flex flex-col items-center justify-center py-3 mb-5">
+                <motion.span 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-[11px] font-black text-zinc-400 uppercase tracking-[0.25em] mb-2"
+                >
+                  预计税后净收入 (月)
+                </motion.span>
+                
+                <div className="relative">
+                  <AnimatePresence mode="wait">
+                    <motion.span 
+                      key={netSalary}
+                      initial={{ opacity: 0, y: 10, filter: 'blur(5px)' }}
+                      animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                      exit={{ opacity: 0, y: -10, filter: 'blur(5px)' }}
+                      transition={{ duration: 0.3, ease: "circOut" }}
+                      className="text-5xl font-black tracking-tighter tabular-nums text-zinc-900 flex items-baseline gap-1"
+                    >
+                      <span className="text-2xl font-bold text-primary mr-0.5">¥</span>
+                      {netSalary.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
+                    </motion.span>
+                  </AnimatePresence>
+                  
+                  {/* Decorative indicator */}
+                  <motion.div 
+                    layoutId="active-nav-glow"
+                    className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-12 h-1 bg-primary/20 rounded-full blur-xs"
+                  />
+                </div>
+              </div>
+
+              {/* Action Button */}
+              <motion.button
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+                whileHover={{ scale: 1.01, backgroundColor: 'var(--color-primary-light)' }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleSave}
+                className="w-full h-15 bg-primary text-pure-white rounded-[24px] font-bold text-base flex items-center justify-center gap-3 shadow-[0_10px_30px_rgba(0,122,255,0.3)] transition-all relative overflow-hidden group/btn"
+              >
+                <div className="absolute inset-0 bg-linear-to-r from-white/0 via-white/10 to-white/0 -translate-x-full group-hover/btn:translate-x-full transition-transform duration-700" />
+                <Save className="w-5 h-5" />
+                保存至本月记录
+              </motion.button>
+            </div>
           </div>
         </motion.div>
       </div>
@@ -335,7 +415,7 @@ export default function CalculatorView({ settings, setSettings, onSave }: Calcul
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </motion.div>
   );
 }
 

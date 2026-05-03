@@ -46,6 +46,7 @@ import SocialSecurityView from './components/SocialSecurityView';
 import SalaryDetailView from './components/SalaryDetailView';
 import SalaryEditView from './components/SalaryEditView';
 import AppearanceSettingsView from './components/AppearanceSettingsView';
+import RealtimeSalaryView from './components/RealtimeSalaryView';
 
 const INITIAL_SETTINGS: SalarySettings = {
   baseSalary: 15000,
@@ -152,6 +153,8 @@ export default function App() {
         return <SocialSecurityView baseSalary={settings.baseSalary} onBack={() => setActiveView('profile')} />;
       case 'appearanceSettings':
         return <AppearanceSettingsView theme={theme} setTheme={setTheme} onBack={() => setActiveView('profile')} />;
+      case 'realtimeSalary':
+        return <RealtimeSalaryView settings={settings} accumulatedValue={accumulated} perSecond={earningsPerSecond} onClose={() => setActiveView('home')} />;
       case 'calendar':
         return <CalendarView />;
       case 'salaryDetail':
@@ -181,7 +184,7 @@ export default function App() {
   return (
     <div className="flex flex-col min-h-screen mesh-bg">
       {/* Top App Bar */}
-      {['home', 'calculator', 'calendar', 'history', 'profile'].includes(activeView) && (
+      {['home', 'calculator', 'calendar', 'history', 'profile'].includes(activeView) && activeView !== 'realtimeSalary' && (
         <header className="w-full pt-12 pb-2 px-6 flex justify-center items-center">
           <h1 className="font-bold text-[17px] text-zinc-900 tracking-tight">
             {activeView === 'home' ? today : 
@@ -209,38 +212,40 @@ export default function App() {
       </main>
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-md z-50 bg-white/90 backdrop-blur-xl border border-white shadow-2xl shadow-zinc-200/50 h-[72px] rounded-full flex justify-around items-center px-2">
-        <NavButton 
-          active={activeView === 'home'} 
-          onClick={() => setActiveView('home')} 
-          icon={<LayoutDashboard className="w-5 h-5" />} 
-          label="首页" 
-        />
-        <NavButton 
-          active={activeView === 'calendar'} 
-          onClick={() => setActiveView('calendar')} 
-          icon={<Calendar className="w-5 h-5" />} 
-          label="日历" 
-        />
-        <NavButton 
-          active={activeView === 'calculator'} 
-          onClick={() => setActiveView('calculator')} 
-          icon={<Calculator className="w-5 h-5" />} 
-          label="计算器" 
-        />
-        <NavButton 
-          active={['history', 'salaryDetail', 'salaryEdit'].includes(activeView)} 
-          onClick={() => setActiveView('history')} 
-          icon={<ReceiptText className="w-5 h-5" />} 
-          label="明细" 
-        />
-        <NavButton 
-          active={['profile', 'salarySettings', 'socialSecurity', 'appearanceSettings'].includes(activeView)} 
-          onClick={() => setActiveView('profile')} 
-          icon={<User className="w-5 h-5" />} 
-          label="我的" 
-        />
-      </nav>
+      {activeView !== 'realtimeSalary' && (
+        <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-md z-50 bg-white/90 backdrop-blur-xl border border-white shadow-2xl shadow-zinc-200/50 h-[72px] rounded-full flex justify-around items-center px-2">
+          <NavButton 
+            active={activeView === 'home'} 
+            onClick={() => setActiveView('home')} 
+            icon={<LayoutDashboard className="w-5 h-5" />} 
+            label="首页" 
+          />
+          <NavButton 
+            active={activeView === 'calendar'} 
+            onClick={() => setActiveView('calendar')} 
+            icon={<Calendar className="w-5 h-5" />} 
+            label="日历" 
+          />
+          <NavButton 
+            active={activeView === 'calculator'} 
+            onClick={() => setActiveView('calculator')} 
+            icon={<Calculator className="w-5 h-5" />} 
+            label="计算器" 
+          />
+          <NavButton 
+            active={['history', 'salaryDetail', 'salaryEdit'].includes(activeView)} 
+            onClick={() => setActiveView('history')} 
+            icon={<ReceiptText className="w-5 h-5" />} 
+            label="明细" 
+          />
+          <NavButton 
+            active={['profile', 'salarySettings', 'socialSecurity', 'appearanceSettings'].includes(activeView)} 
+            onClick={() => setActiveView('profile')} 
+            icon={<User className="w-5 h-5" />} 
+            label="我的" 
+          />
+        </nav>
+      )}
     </div>
   );
 }
