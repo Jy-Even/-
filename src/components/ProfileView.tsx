@@ -19,9 +19,17 @@ interface ProfileViewProps {
   settings: SalarySettings;
   setSettings: (settings: SalarySettings) => void;
   onNavigate: (view: ViewType) => void;
+  theme: 'system'|'light'|'dark'|'midnight';
 }
 
-export default function ProfileView({ settings, setSettings, onNavigate }: ProfileViewProps) {
+const themeLabels = {
+  system: '跟随系统',
+  light: '浅色模式',
+  dark: '深色模式',
+  midnight: '午夜蓝',
+};
+
+export default function ProfileView({ settings, setSettings, onNavigate, theme }: ProfileViewProps) {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [simulatedPush, setSimulatedPush] = useState(false);
@@ -49,7 +57,7 @@ export default function ProfileView({ settings, setSettings, onNavigate }: Profi
             initial={{ opacity: 0, y: 50, x: '-50%' }}
             animate={{ opacity: 1, y: 0, x: '-50%' }}
             exit={{ opacity: 0, y: 20, x: '-50%' }}
-            className="fixed bottom-24 left-1/2 bg-zinc-800 text-white px-6 py-3 rounded-full shadow-2xl z-50 font-medium text-sm whitespace-nowrap"
+            className="fixed bottom-24 left-1/2 bg-zinc-800 text-pure-white px-6 py-3 rounded-full shadow-2xl z-50 font-medium text-sm whitespace-nowrap"
           >
             {toastMessage}
           </motion.div>
@@ -63,7 +71,7 @@ export default function ProfileView({ settings, setSettings, onNavigate }: Profi
             className="fixed top-0 left-1/2 w-[90%] max-w-sm bg-white/90 backdrop-blur-xl p-4 rounded-3xl shadow-2xl z-[100] border border-white/50 flex gap-4 items-center"
           >
             <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center shrink-0">
-              <Bell className="w-5 h-5 text-white" />
+              <Bell className="w-5 h-5 text-pure-white" />
             </div>
             <div className="flex flex-col">
               <span className="font-bold text-zinc-900 text-sm">工资卡助手</span>
@@ -73,35 +81,25 @@ export default function ProfileView({ settings, setSettings, onNavigate }: Profi
         )}
       </AnimatePresence>
       {/* Profile Header */}
-      <header className="flex flex-col items-center py-8 relative">
+      <header className="flex flex-row items-center gap-4 py-4 relative">
         <div className="absolute top-0 inset-x-0 h-40 bg-linear-to-b from-primary/10 to-transparent rounded-full blur-3xl -z-10"></div>
         
-        <div className="relative mb-4">
+        <div className="relative">
           <motion.div 
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="w-24 h-24 rounded-full p-1 glass-elevated shadow-xl relative z-10"
+            className="w-16 h-16 rounded-full p-0.5 glass-elevated shadow-md relative z-10"
           >
-            <img 
-              src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" 
-              alt="Profile" 
-              className="w-full h-full rounded-full object-cover"
-            />
+            <div className="w-full h-full rounded-full bg-primary/10 flex items-center justify-center">
+               <span className="text-xl font-black text-primary">J</span>
+            </div>
           </motion.div>
         </div>
 
-        <div className="text-center mb-3">
-          <h2 className="text-3xl font-black tracking-tight mb-1 text-zinc-900">Jay Yu</h2>
-          <p className="text-zinc-500 font-medium text-sm">高级产品设计师</p>
+        <div className="flex flex-col flex-1">
+          <h2 className="text-2xl font-black tracking-tight text-zinc-900">Jay Yu</h2>
+          <p className="text-zinc-500 font-medium text-xs">欢迎回来</p>
         </div>
-        <motion.p 
-          initial={{ y: 10, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="text-[12px] font-bold text-zinc-400 uppercase tracking-widest bg-zinc-100 px-3 py-1 rounded-full"
-        >
-          上海 · 2023年9月加入
-        </motion.p>
       </header>
 
       {/* Settings Groups */}
@@ -126,8 +124,16 @@ export default function ProfileView({ settings, setSettings, onNavigate }: Profi
             <Toggle active={notificationsEnabled} onChange={handleToggleNotifications} />
           </SettingsItem>
           <SettingsItem icon={<RefreshCcw className="text-primary w-6 h-6" strokeWidth={2.5} />} label="数据同步" />
-          <SettingsItem icon={<Palette className="text-primary w-6 h-6" strokeWidth={2.5} />} label="外观设置" border={false}>
-            <span className="text-sm font-bold text-zinc-400">跟随系统</span>
+          <SettingsItem 
+            icon={<Palette className="text-primary w-6 h-6" strokeWidth={2.5} />} 
+            label="外观设置" 
+            border={false}
+            onClick={() => onNavigate('appearanceSettings')}
+          >
+            <span className="text-sm font-bold text-zinc-400 flex items-center gap-1">
+               {themeLabels[theme] || '跟随系统'}
+               <ChevronRight className="w-4 h-4 text-zinc-300" />
+            </span>
           </SettingsItem>
         </SettingsGroup>
 

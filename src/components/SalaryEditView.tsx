@@ -14,14 +14,16 @@ export default function SalaryEditView({ record, onSave, onBack }: SalaryEditVie
   const [localRecord, setLocalRecord] = useState<MonthlySalary>({ ...record });
 
   const calculateTotal = (data: Partial<MonthlySalary>) => {
-    const gross = (data.baseAmount || 0) + (data.bonus || 0);
-    const net = gross - (data.socialSecurity || 0) - (data.tax || 0);
-    setLocalRecord(prev => ({
-      ...prev,
-      ...data,
-      gross,
-      net
-    }));
+    setLocalRecord(prev => {
+      const merged = { ...prev, ...data };
+      const gross = (merged.baseAmount || 0) + (merged.bonus || 0);
+      const net = gross - (merged.socialSecurity || 0) - (merged.tax || 0);
+      return {
+        ...merged,
+        gross,
+        net
+      };
+    });
   };
 
   const handleChange = (field: keyof MonthlySalary, value: string) => {
@@ -71,7 +73,7 @@ export default function SalaryEditView({ record, onSave, onBack }: SalaryEditVie
          whileHover={{ scale: 1.02 }}
          whileTap={{ scale: 0.98 }}
          onClick={() => onSave(localRecord)}
-         className="w-full h-14 bg-primary text-white rounded-2xl font-black text-sm flex items-center justify-center gap-2 shadow-xl shadow-primary/25 mt-4"
+         className="w-full h-14 bg-primary text-pure-white rounded-2xl font-black text-sm flex items-center justify-center gap-2 shadow-xl shadow-primary/25 mt-4"
       >
         保存更正
       </motion.button>
@@ -80,6 +82,16 @@ export default function SalaryEditView({ record, onSave, onBack }: SalaryEditVie
 }
 
 function InputRow({ label, value, onChange, color }: { label: string, value: number, onChange: (val: string) => void, color?: string }) {
+  const [inputValue, setInputValue] = React.useState(value === 0 ? '' : value.toString());
+
+  React.useEffect(() => {
+    // Only update from parent if the numeric value actually deviates (e.g., reset)
+    // This allows trailing dots like "1." to persist in local state
+    if (parseFloat(inputValue) !== value && !(inputValue === '' && value === 0)) {
+      setInputValue(value === 0 ? '' : value.toString());
+    }
+  }, [value, inputValue]);
+
   return (
     <div className="flex justify-between items-center py-1">
       <span className="text-sm font-medium text-zinc-500">{label}</span>
@@ -87,9 +99,12 @@ function InputRow({ label, value, onChange, color }: { label: string, value: num
         <span className="text-zinc-400 font-bold mr-1">¥</span>
         <input 
           type="number"
-          value={value === 0 ? '' : value}
+          value={inputValue}
           placeholder="0.00"
-          onChange={(e) => onChange(e.target.value)}
+          onChange={(e) => {
+            setInputValue(e.target.value);
+            onChange(e.target.value);
+          }}
           className={`w-24 text-right bg-transparent border-none focus:ring-0 font-bold font-mono p-0 ${color ? color : 'text-zinc-900'}`}
         />
       </div>

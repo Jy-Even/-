@@ -1,13 +1,101 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
+:root {
+  --primary: #007AFF;
+  --primary-light: #47A1FF;
+  --bg: #F2F2F7;
+  
+  --z-900: #18181b;
+  --z-800: #27272a;
+  --z-700: #3f3f46;
+  --z-600: #52525b;
+  --z-500: #71717a;
+  --z-400: #a1a1aa;
+  --z-300: #d4d4d8;
+  --z-200: #e4e4e7;
+  --z-100: #f4f4f5;
+  --z-50:  #fafafa;
+  --c-white: #ffffff;
+  
+  --glass-bg: rgba(255, 255, 255, 0.72);
+  --glass-border: rgba(255, 255, 255, 0.5);
+  --glass-shadow: rgba(0, 0, 0, 0.05);
+  
+  --glass-elevated-bg: rgba(255, 255, 255, 0.85);
+  --glass-elevated-border: rgba(255, 255, 255, 0.6);
+  --glass-elevated-shadow: rgba(0, 0, 0, 0.1);
+}
+
+.dark {
+  --bg: #000000;
+  --primary: #0A84FF;
+  
+  --z-900: #ffffff; 
+  --z-800: #f4f4f5; 
+  --z-700: #e4e4e7;
+  --z-600: #d4d4d8;
+  --z-500: #a1a1aa;
+  --z-400: #71717a;
+  --z-300: #52525b;
+  --z-200: #3f3f46;
+  --z-100: #1c1c1e;
+  --z-50:  #18181b; 
+  --c-white: #111111;
+
+  --glass-bg: rgba(28, 28, 30, 0.72);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-shadow: rgba(0, 0, 0, 0.5);
+  
+  --glass-elevated-bg: rgba(44, 44, 46, 0.85);
+  --glass-elevated-border: rgba(255, 255, 255, 0.15);
+  --glass-elevated-shadow: rgba(0, 0, 0, 0.6);
+}
+
+.theme-midnight {
+  --bg: #0B0F19;
+  --primary: #4DA6FF;
+  
+  --z-900: #E6F0FF; 
+  --z-800: #CCE0FF; 
+  --z-700: #99C2FF;
+  --z-600: #66A3FF;
+  --z-500: #3385FF;
+  --z-400: #005CE6;
+  --z-300: #0047B3;
+  --z-200: #132440;
+  --z-100: #0D1A33;
+  --z-50:  #0A1429;
+  --c-white: #101828; 
+
+  --glass-bg: rgba(13, 26, 51, 0.72);
+  --glass-border: rgba(77, 166, 255, 0.15);
+  --glass-shadow: rgba(0, 0, 0, 0.4);
+  
+  --glass-elevated-bg: rgba(19, 36, 64, 0.85);
+  --glass-elevated-border: rgba(77, 166, 255, 0.25);
+  --glass-elevated-shadow: rgba(0, 0, 0, 0.5);
+}
+
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   
-  --color-primary: #007AFF;
-  --color-primary-light: #47A1FF;
-  --color-background: #F2F2F7;
+  --color-primary: var(--primary);
+  --color-primary-light: var(--primary-light);
+  --color-background: var(--bg);
   
+  --color-zinc-900: var(--z-900);
+  --color-zinc-800: var(--z-800);
+  --color-zinc-700: var(--z-700);
+  --color-zinc-600: var(--z-600);
+  --color-zinc-500: var(--z-500);
+  --color-zinc-400: var(--z-400);
+  --color-zinc-300: var(--z-300);
+  --color-zinc-200: var(--z-200);
+  --color-zinc-100: var(--z-100);
+  --color-zinc-50: var(--z-50);
+  --color-white: var(--c-white);
+
   --radius-2xl: 1.5rem;
   --radius-3xl: 1.75rem;
   --radius-4xl: 2rem;
@@ -16,27 +104,31 @@
 
 @layer utilities {
   .glass {
-    background: rgba(255, 255, 255, 0.72);
+    background: var(--glass-bg);
     backdrop-filter: blur(40px);
     -webkit-backdrop-filter: blur(40px);
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.03), 0 0 1px 0 rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 4px 24px -1px var(--glass-shadow), 0 0 1px 0 rgba(0, 0, 0, 0.05);
   }
   
   .glass-elevated {
-    background: rgba(255, 255, 255, 0.85);
+    background: var(--glass-elevated-bg);
     backdrop-filter: blur(50px);
     -webkit-backdrop-filter: blur(50px);
-    border: 1px solid rgba(255, 255, 255, 0.6);
-    box-shadow: 0 12px 40px -4px rgba(0, 0, 0, 0.08), 0 0 1px 0 rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--glass-elevated-border);
+    box-shadow: 0 12px 40px -4px var(--glass-elevated-shadow), 0 0 1px 0 rgba(0, 0, 0, 0.1);
+  }
+
+  .text-pure-white {
+    color: #ffffff !important;
   }
 
   .mesh-bg {
-    background-color: #f1f3fe;
+    background-color: var(--bg);
     background-image: 
-        radial-gradient(at 10% 10%, rgba(216, 226, 255, 0.6) 0, transparent 40%), 
-        radial-gradient(at 90% 10%, rgba(255, 219, 204, 0.4) 0, transparent 40%),
-        radial-gradient(at 50% 90%, rgba(230, 232, 243, 0.5) 0, transparent 50%);
+        radial-gradient(at 10% 10%, rgba(10, 132, 255, 0.15) 0, transparent 40%), 
+        radial-gradient(at 90% 10%, rgba(255, 105, 180, 0.08) 0, transparent 40%),
+        radial-gradient(at 50% 90%, rgba(71, 161, 255, 0.1) 0, transparent 50%);
     background-attachment: fixed;
     background-size: cover;
   }

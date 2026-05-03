@@ -1,4 +1,4 @@
-export type ViewType = 'home' | 'calculator' | 'history' | 'profile' | 'calendar' | 'salarySettings' | 'socialSecurity' | 'salaryDetail' | 'salaryEdit';
+export type ViewType = 'home' | 'calculator' | 'history' | 'profile' | 'calendar' | 'salarySettings' | 'socialSecurity' | 'salaryDetail' | 'salaryEdit' | 'appearanceSettings';
 
 export type ScheduleType = 'Double' | 'Single' | 'Big-Small';
 

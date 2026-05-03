@@ -192,29 +192,62 @@ export default function CalculatorView({ settings, setSettings, onSave }: Calcul
       {/* Bottom Floating Result Panel */}
       <div className="fixed bottom-24 left-0 w-full px-5 z-40 pointer-events-none">
         <motion.div 
-          initial={{ y: 50, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
+          initial={{ y: 100, opacity: 0, scale: 0.95 }}
+          animate={{ y: 0, opacity: 1, scale: 1 }}
+          transition={{ 
+            type: "spring",
+            damping: 25,
+            stiffness: 200,
+            delay: 0.1
+          }}
           className="max-w-lg mx-auto glass-elevated rounded-[32px] shadow-2xl overflow-hidden pointer-events-auto border-t border-white"
         >
           <div className="p-6">
-            <div className="grid grid-cols-3 gap-4 mb-6">
+            <motion.div 
+              initial="hidden"
+              animate="visible"
+              variants={{
+                hidden: { opacity: 0 },
+                visible: {
+                  opacity: 1,
+                  transition: {
+                    staggerChildren: 0.1,
+                    delayChildren: 0.3
+                  }
+                }
+              }}
+              className="grid grid-cols-3 gap-4 mb-6"
+            >
               <ResultItem label="日均" value={`¥${dailyPay.toFixed(2)}`} />
               <ResultItem label="时薪" value={`¥${hourlyPay.toFixed(2)}`} />
               <ResultItem label="五险一金" value={`-¥${socialSecurity.toFixed(0)}`} color="text-red-500" />
-            </div>
+            </motion.div>
 
-            <div className="flex flex-col items-center justify-center py-2 mb-4">
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.4 }}
+              className="flex flex-col items-center justify-center py-2 mb-4"
+            >
               <span className="text-[12px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-1">预计税后收入</span>
-              <span className="text-4xl font-black tracking-tighter text-gradient leading-none tabular-nums mt-1">
+              <motion.span 
+                key={netSalary}
+                initial={{ scale: 0.95, opacity: 0.8 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="text-4xl font-black tracking-tighter text-gradient leading-none tabular-nums mt-1"
+              >
                 {formatCurrency(netSalary)}
-              </span>
-            </div>
+              </motion.span>
+            </motion.div>
 
             <motion.button
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6 }}
               whileHover={{ scale: 1.02, backgroundColor: 'var(--color-primary-light)' }}
               whileTap={{ scale: 0.98 }}
               onClick={handleSave}
-              className="w-full h-14 bg-primary text-white rounded-2xl font-bold text-sm flex items-center justify-center gap-3 shadow-xl shadow-primary/25 transition-all"
+              className="w-full h-14 bg-primary text-pure-white rounded-2xl font-bold text-sm flex items-center justify-center gap-3 shadow-xl shadow-primary/25 transition-all"
             >
               保存至本月
             </motion.button>
@@ -338,11 +371,17 @@ function AttendanceButton({ icon, label, onClick }: { icon: React.ReactNode, lab
 
 function ResultItem({ label, value, color }: { label: string, value: string, color?: string }) {
   return (
-    <div className="flex flex-col items-center text-center">
+    <motion.div 
+      variants={{
+        hidden: { opacity: 0, y: 10 },
+        visible: { opacity: 1, y: 0 }
+      }}
+      className="flex flex-col items-center text-center"
+    >
       <span className="text-[11px] font-medium text-zinc-400 mb-1">{label}</span>
       <span className={cn("text-[15px] font-bold font-mono", color || "text-zinc-900")}>
         {value}
       </span>
-    </div>
+    </motion.div>
   );
 }

@@ -45,6 +45,7 @@ import SalarySettingsView from './components/SalarySettingsView';
 import SocialSecurityView from './components/SocialSecurityView';
 import SalaryDetailView from './components/SalaryDetailView';
 import SalaryEditView from './components/SalaryEditView';
+import AppearanceSettingsView from './components/AppearanceSettingsView';
 
 const INITIAL_SETTINGS: SalarySettings = {
   baseSalary: 15000,
@@ -77,6 +78,25 @@ export default function App() {
   const [records, setRecords] = useState<SalaryRecord[]>(MOCK_RECORDS);
   const [history, setHistory] = useState<MonthlySalary[]>(MOCK_HISTORY);
   const [selectedHistoryId, setSelectedHistoryId] = useState<string | null>(null);
+
+  const [theme, setTheme] = useState<'system'|'light'|'dark'|'midnight'>(() => {
+    return (localStorage.getItem('app-theme') as any) || 'system';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('app-theme', theme);
+    const root = document.documentElement;
+    root.classList.remove('light', 'dark', 'theme-midnight');
+
+    if (theme === 'system') {
+      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      root.classList.add(systemTheme);
+    } else if (theme === 'midnight') {
+      root.classList.add('dark', 'theme-midnight');
+    } else {
+      root.classList.add(theme);
+    }
+  }, [theme]);
 
   const selectedHistoryRecord = useMemo(() => {
     return history.find(h => h.id === selectedHistoryId);
@@ -125,11 +145,13 @@ export default function App() {
           onDelete={handleDeleteHistory}
         />;
       case 'profile':
-        return <ProfileView settings={settings} setSettings={setSettings} onNavigate={setActiveView} />;
+        return <ProfileView settings={settings} setSettings={setSettings} onNavigate={setActiveView} theme={theme} />;
       case 'salarySettings':
         return <SalarySettingsView settings={settings} onSave={setSettings} onBack={() => setActiveView('profile')} />;
       case 'socialSecurity':
         return <SocialSecurityView baseSalary={settings.baseSalary} onBack={() => setActiveView('profile')} />;
+      case 'appearanceSettings':
+        return <AppearanceSettingsView theme={theme} setTheme={setTheme} onBack={() => setActiveView('profile')} />;
       case 'calendar':
         return <CalendarView />;
       case 'salaryDetail':
@@ -207,13 +229,13 @@ export default function App() {
           label="计算器" 
         />
         <NavButton 
-          active={activeView === 'history'} 
+          active={['history', 'salaryDetail', 'salaryEdit'].includes(activeView)} 
           onClick={() => setActiveView('history')} 
           icon={<ReceiptText className="w-5 h-5" />} 
           label="明细" 
         />
         <NavButton 
-          active={activeView === 'profile'} 
+          active={['profile', 'salarySettings', 'socialSecurity', 'appearanceSettings'].includes(activeView)} 
           onClick={() => setActiveView('profile')} 
           icon={<User className="w-5 h-5" />} 
           label="我的" 

@@ -58,7 +58,7 @@ export default function CalendarView() {
         onClick={() => setSelectedDate(d)}
         className={cn(
           "h-12 w-full rounded-2xl flex items-center justify-center text-sm font-bold transition-all relative",
-          isSelected ? "bg-primary text-white shadow-lg shadow-primary/30" : "text-zinc-600 hover:bg-zinc-100",
+          isSelected ? "bg-primary text-pure-white shadow-lg shadow-primary/30" : "text-zinc-600 hover:bg-zinc-100",
           isToday && !isSelected && "text-primary border border-primary/20 bg-primary/5"
         )}
       >

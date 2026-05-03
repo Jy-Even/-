@@ -61,7 +61,7 @@ export default function SocialSecurityView({ baseSalary, onBack }: SocialSecurit
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={onBack}
-          className="w-full h-14 bg-primary text-white rounded-2xl font-black text-sm flex items-center justify-center gap-3 shadow-xl shadow-primary/25 mt-4"
+          className="w-full h-14 bg-primary text-pure-white rounded-2xl font-black text-sm flex items-center justify-center gap-3 shadow-xl shadow-primary/25 mt-4"
         >
           确认配置
         </motion.button>
