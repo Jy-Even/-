@@ -51,7 +51,7 @@ export default function HomeView({ settings, accumulated, perSecond, onAction }:
       initial="hidden"
       animate="visible"
       variants={CONTAINER_VARIANTS}
-      className="flex flex-col gap-10 px-5"
+      className="flex flex-col gap-6 px-5"
     >
       {/* Main Dashboard Card - Redesigned with Glassmorphism */}
       <motion.section 
@@ -168,21 +168,34 @@ export default function HomeView({ settings, accumulated, perSecond, onAction }:
       {/* Monthly Overview Card */}
       <motion.section 
         variants={ITEM_VARIANTS}
-        className="glass rounded-[32px] p-6 shadow-xl"
+        className="glass-elevated rounded-[40px] p-8 shadow-2xl overflow-hidden relative group border border-white/60"
+        onClick={() => onAction?.('history')}
       >
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-xl font-bold tracking-tight">本月概览</h3>
+        {/* Subtle Background Glow for the Card */}
+        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-3xl -mr-16 -mt-16 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-32 h-32 bg-primary/5 blur-3xl -ml-16 -mb-16 pointer-events-none" />
+
+        <div className="flex justify-between items-center mb-8 relative z-10">
+          <div className="flex flex-col">
+            <h3 className="text-xl font-black tracking-tighter text-zinc-900 leading-none mb-1">月度趋势</h3>
+            <span className="text-[10px] font-black text-primary/60 uppercase tracking-[0.2em]">最近 7 日收益波势</span>
+          </div>
           <motion.div 
             whileHover={{ scale: 1.1, rotate: 45 }}
-            className="w-8 h-8 rounded-full bg-zinc-100 flex items-center justify-center cursor-pointer"
+            whileTap={{ scale: 0.9 }}
+            className="w-10 h-10 rounded-full bg-white border border-zinc-100 flex items-center justify-center cursor-pointer shadow-sm group-hover:bg-primary group-hover:border-primary transition-all duration-300"
           >
-            <ArrowUpRight className="text-zinc-600 w-4 h-4" />
+            <ArrowUpRight className="text-zinc-400 group-hover:text-white w-5 h-5 transition-colors" />
           </motion.div>
         </div>
 
-        <div className="h-40 mb-10">
+        <div className="h-32 mb-8 -mx-4 relative z-10">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={CHART_DATA} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
+            <BarChart 
+              data={CHART_DATA} 
+              margin={{ top: 0, right: 15, left: 15, bottom: 20 }}
+              accessibilityLayer={false}
+            >
               <defs>
                 <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="var(--color-primary)" stopOpacity={1} />
@@ -193,18 +206,25 @@ export default function HomeView({ settings, accumulated, perSecond, onAction }:
                 dataKey="name" 
                 axisLine={false} 
                 tickLine={false} 
-                tick={{ fontSize: 11, fill: '#A1A1AA', fontWeight: 600 }} 
-                dy={12}
+                tick={{ fontSize: 10, fill: '#A1A1AA', fontWeight: 600 }}
+                dy={10}
               />
               <Tooltip 
-                cursor={{ fill: 'transparent' }} 
+                cursor={false}
                 content={() => null}
               />
-              <Bar dataKey="value" radius={[6, 6, 6, 6]} barSize={28}>
+              <Bar 
+                dataKey="value" 
+                radius={[6, 6, 6, 6]} 
+                barSize={18}
+                activeBar={false}
+                isAnimationActive={true}
+              >
                 {CHART_DATA.map((entry, index) => (
                   <Cell 
                     key={`cell-${index}`} 
-                    fill={entry.active ? 'url(#barGradient)' : entry.color} 
+                    fill={entry.active ? 'url(#barGradient)' : entry.color}
+                    style={{ outline: 'none' }}
                   />
                 ))}
               </Bar>
@@ -212,10 +232,10 @@ export default function HomeView({ settings, accumulated, perSecond, onAction }:
           </ResponsiveContainer>
         </div>
 
-        <div className="grid grid-cols-3 divide-x divide-zinc-100 py-2 bg-zinc-50/50 rounded-3xl border border-zinc-100">
-          <OverviewItem label="总额" value="¥15k" />
-          <OverviewItem label="扣减" value="¥2.5k" color="text-red-500" />
-          <OverviewItem label="实发" value="¥12.5k" color="text-green-600" />
+        <div className="grid grid-cols-3 divide-x divide-zinc-100 py-4 bg-white/40 backdrop-blur-sm rounded-[28px] border border-white shadow-sm relative z-10">
+          <OverviewItem label="预估月薪" value={formatCurrency(settings.baseSalary).split('.')[0]} />
+          <OverviewItem label="五险一金" value={formatCurrency(settings.baseSalary * 0.225).split('.')[0]} color="text-zinc-400" />
+          <OverviewItem label="预估实发" value={formatCurrency(settings.baseSalary * 0.775).split('.')[0]} color="text-primary" />
         </div>
       </motion.section>
     </motion.div>

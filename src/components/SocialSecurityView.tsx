@@ -7,7 +7,8 @@ import {
   Building,
   HeartPulse,
   Briefcase,
-  LineChart
+  LineChart,
+  Info
 } from 'lucide-react';
 import { cn, formatCurrency } from '../lib/utils';
 
@@ -51,10 +52,10 @@ export default function SocialSecurityView({ baseSalary, onBack }: SocialSecurit
         <h3 className="text-[13px] font-bold text-zinc-400 uppercase tracking-[0.2em] pl-2">详细扣费比例</h3>
         
         <div className="glass rounded-3xl p-5 space-y-6 shadow-sm">
-          <RateSlider label="养老保险" icon={<Building className="w-5 h-5" />} value={pensionRate} onChange={setPensionRate} amount={calculate(pensionRate)} />
-          <RateSlider label="医疗保险" icon={<HeartPulse className="w-5 h-5" />} value={medicalRate} onChange={setMedicalRate} amount={calculate(medicalRate)} />
-          <RateSlider label="失业保险" icon={<Briefcase className="w-5 h-5" />} value={unemploymentRate} onChange={setUnemploymentRate} amount={calculate(unemploymentRate)} />
-          <RateSlider label="住房公积金" icon={<LineChart className="w-5 h-5" />} value={housingRate} onChange={setHousingRate} amount={calculate(housingRate)} color="text-primary" />
+          <RateSlider label="养老保险" icon={<Building className="w-5 h-5" />} value={pensionRate} onChange={setPensionRate} amount={calculate(pensionRate)} tooltip="为退休后的生活提供基本保障，按缴费基数 8% 计入个人账户。" />
+          <RateSlider label="医疗保险" icon={<HeartPulse className="w-5 h-5" />} value={medicalRate} onChange={setMedicalRate} amount={calculate(medicalRate)} tooltip="用于门诊医疗费用报销和住院统筹。个人缴纳部分通常进入个人医保卡账户。" />
+          <RateSlider label="失业保险" icon={<Briefcase className="w-5 h-5" />} value={unemploymentRate} onChange={setUnemploymentRate} amount={calculate(unemploymentRate)} tooltip="非本人意愿中断就业时，可申领失业保险金，通常个人缴纳比例较低。" />
+          <RateSlider label="住房公积金" icon={<LineChart className="w-5 h-5" />} value={housingRate} onChange={setHousingRate} amount={calculate(housingRate)} color="text-primary" tooltip="长期住房储金，可用于购房贷款优惠、租房支取等，个人与公司等额缴纳。" />
         </div>
 
         <motion.button
@@ -70,13 +71,14 @@ export default function SocialSecurityView({ baseSalary, onBack }: SocialSecurit
   );
 }
 
-function RateSlider({ label, icon, value, onChange, amount, color = "text-red-500" }: { 
+function RateSlider({ label, icon, value, onChange, amount, color = "text-red-500", tooltip }: { 
   label: string, 
   icon: React.ReactNode, 
   value: number, 
   onChange: (v: number) => void, 
   amount: number,
-  color?: string
+  color?: string,
+  tooltip?: string
 }) {
   const [inputValue, setInputValue] = useState(value.toString());
 
@@ -102,10 +104,23 @@ function RateSlider({ label, icon, value, onChange, amount, color = "text-red-50
           <div className="w-8 h-8 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-500 italic">
             {icon}
           </div>
-          <span className="text-sm font-bold text-zinc-700">{label}</span>
+          <div className="flex flex-col group relative">
+            <span className="text-sm font-bold text-zinc-700 flex items-center gap-1">
+              {label}
+              <Info className="w-3 h-3 text-zinc-300" />
+            </span>
+            <div className="absolute left-0 bottom-full mb-2 w-48 p-2 bg-zinc-800 text-[10px] text-white rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+              {tooltip}
+            </div>
+          </div>
         </div>
         <div className="flex flex-col items-end gap-1">
-          <span className={cn("text-sm font-black font-mono", color)}>-{formatCurrency(amount)}</span>
+          <span className={cn("text-sm font-black font-mono flex items-center gap-1.5", color)}>
+            -{formatCurrency(amount)}
+            <span className="text-[10px] opacity-50 font-bold bg-zinc-100/50 px-1.5 py-0.5 rounded-full border border-zinc-200/40 tracking-tighter">
+              ({value.toFixed(1).replace(/\.0$/, '')}%)
+            </span>
+          </span>
           <div className="flex items-center bg-zinc-50 px-2 py-0.5 rounded-md border border-zinc-200/60 shadow-inner">
             <input 
               type="number" 

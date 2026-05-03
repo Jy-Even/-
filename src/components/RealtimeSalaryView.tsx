@@ -7,7 +7,6 @@ import {
   Target, 
   Zap, 
   ArrowUpRight,
-  ChevronDown,
   Info
 } from 'lucide-react';
 import { SalarySettings } from '../types';
@@ -229,17 +228,7 @@ export default function RealtimeSalaryView({ settings, accumulatedValue, perSeco
         </div>
       </main>
 
-      {/* Footer Navigation Hints */}
-      <footer className="relative z-10 px-6 py-8 flex flex-col items-center">
-        <motion.div 
-          animate={{ y: [0, 5, 0] }}
-          transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-          className="flex flex-col items-center gap-1 opacity-30"
-        >
-          <ChevronDown className="w-5 h-5" />
-          <span className="text-[9px] font-black uppercase tracking-[0.4em]">持续增值</span>
-        </motion.div>
-      </footer>
+
     </motion.div>
   );
 }

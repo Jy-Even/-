@@ -12,8 +12,8 @@ export interface SalarySettings {
 export interface SalaryRecord {
   id: string;
   date: string;
-  type: 'Overtime' | 'Leave' | 'Comp';
-  subtype: 'Workday' | 'Weekend' | 'Holiday';
+  type: 'Overtime' | 'Leave' | 'Comp' | 'Regular' | 'Penalty';
+  subtype: 'Workday' | 'Weekend' | 'Holiday' | 'Late' | 'Unpaid';
   duration: number; // in hours
   estimatedPay: number;
 }

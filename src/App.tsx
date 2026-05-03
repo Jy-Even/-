@@ -47,6 +47,7 @@ import SalaryDetailView from './components/SalaryDetailView';
 import SalaryEditView from './components/SalaryEditView';
 import AppearanceSettingsView from './components/AppearanceSettingsView';
 import RealtimeSalaryView from './components/RealtimeSalaryView';
+import OnboardingGuide from './components/OnboardingGuide';
 
 const INITIAL_SETTINGS: SalarySettings = {
   baseSalary: 15000,
@@ -79,6 +80,20 @@ export default function App() {
   const [records, setRecords] = useState<SalaryRecord[]>(MOCK_RECORDS);
   const [history, setHistory] = useState<MonthlySalary[]>(MOCK_HISTORY);
   const [selectedHistoryId, setSelectedHistoryId] = useState<string | null>(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  useEffect(() => {
+    const completed = localStorage.getItem('onboarding-completed');
+    if (!completed) {
+      setShowOnboarding(true);
+    }
+  }, []);
+
+  const handleOnboardingComplete = (newSettings: SalarySettings) => {
+    setSettings(newSettings);
+    setShowOnboarding(false);
+    localStorage.setItem('onboarding-completed', 'true');
+  };
 
   const [theme, setTheme] = useState<'system'|'light'|'dark'|'midnight'>(() => {
     return (localStorage.getItem('app-theme') as any) || 'system';
@@ -183,6 +198,15 @@ export default function App() {
 
   return (
     <div className="flex flex-col min-h-screen mesh-bg">
+      <AnimatePresence>
+        {showOnboarding && (
+          <OnboardingGuide 
+            initialSettings={settings} 
+            onComplete={handleOnboardingComplete} 
+          />
+        )}
+      </AnimatePresence>
+
       {/* Top App Bar */}
       {['home', 'calculator', 'calendar', 'history', 'profile'].includes(activeView) && activeView !== 'realtimeSalary' && (
         <header className="w-full pt-12 pb-2 px-6 flex justify-center items-center">

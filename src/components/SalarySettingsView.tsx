@@ -118,8 +118,15 @@ export default function SalarySettingsView({ settings, onSave, onBack }: SalaryS
 
         <div className="glass rounded-3xl p-5 space-y-8 shadow-sm">
           <div className="flex flex-col gap-3">
-            <div className="flex flex-col">
-              <span className="text-[14px] font-bold text-zinc-800 tracking-wide pl-1">基本薪资 (税前)</span>
+            <div className="flex flex-col relative group">
+              <span className="text-[14px] font-bold text-zinc-800 tracking-wide pl-1 flex items-center gap-1.5">
+                基本薪资 (税前)
+                <Info className="w-3.5 h-3.5 text-zinc-300" />
+              </span>
+              <div className="absolute left-1 bottom-full mb-2 w-56 p-2.5 bg-zinc-800 text-[10px] text-white rounded-xl shadow-2xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 leading-relaxed">
+                <span className="font-bold text-primary block mb-1">什么是基本薪资？</span>
+                它是您合同约定的固定月薪。系统以此为基准，按照 21.75 天折算日薪，用于计算迟到、请假及加班的变动金额。
+              </div>
               <span className="text-[12px] text-zinc-400 pl-1">作为加班费、请假扣除的计算基数</span>
             </div>
             <div className="flex items-center gap-3 bg-zinc-100 p-3 rounded-2xl inner-shadow border border-zinc-200/50">
@@ -135,8 +142,16 @@ export default function SalarySettingsView({ settings, onSave, onBack }: SalaryS
           </div>
 
           <div className="flex flex-col gap-3">
-            <div className="flex flex-col">
-              <span className="text-[14px] font-bold text-zinc-800 tracking-wide pl-1">结算周期</span>
+            <div className="flex flex-col relative group">
+              <span className="text-[14px] font-bold text-zinc-800 tracking-wide pl-1 flex items-center gap-1.5">
+                结算周期
+                <Info className="w-3.5 h-3.5 text-zinc-300" />
+              </span>
+              <div className="absolute left-1 bottom-full mb-2 w-56 p-2.5 bg-zinc-800 text-[10px] text-white rounded-xl shadow-2xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 leading-relaxed">
+                <span className="font-bold text-primary block mb-1">按月 vs 按年</span>
+                <b>按月：</b>通常为 12 月薪制。
+                <br/><b>按年：</b>适用于包含 13 薪或其他形式年奖的总包模式，系统将平摊计算。
+              </div>
               <span className="text-[12px] text-zinc-400 pl-1">选择薪资的发放周期模式</span>
             </div>
             <div className="bg-zinc-100 p-1 rounded-2xl flex gap-1">
@@ -156,8 +171,18 @@ export default function SalarySettingsView({ settings, onSave, onBack }: SalaryS
           </div>
 
           <div className="flex flex-col gap-3">
-            <div className="flex flex-col">
-              <span className="text-[14px] font-bold text-zinc-800 tracking-wide pl-1">工时制度</span>
+            <div className="flex flex-col relative group">
+              <span className="text-[14px] font-bold text-zinc-800 tracking-wide pl-1 flex items-center gap-1.5">
+                工时制度
+                <Info className="w-3.5 h-3.5 text-zinc-300" />
+              </span>
+              <div className="absolute left-1 bottom-full mb-2 w-56 p-2.5 bg-zinc-800 text-[10px] text-white rounded-xl shadow-2xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 leading-relaxed">
+                <span className="font-bold text-primary block mb-1">制度的影响</span>
+                不同的制度下，月工作日总数不同。
+                <br/><b>双休：</b>周六日不计。
+                <br/><b>单休：</b>仅周日不计。
+                <br/><b>大小周：</b>交替工作 5 天和 6 天。
+              </div>
               <span className="text-[12px] text-zinc-400 pl-1">影响加班定性和双休日天数计算</span>
             </div>
             <div className="bg-zinc-100 p-1 rounded-2xl flex gap-1">

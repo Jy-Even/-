@@ -64,26 +64,49 @@ export default function ProfileView({ settings, setSettings, onNavigate, theme }
     setTimeout(() => setToastMessage(null), 3000);
   };
 
-  return (
-    <motion.div 
-      initial="hidden"
-      animate="visible"
-      variants={CONTAINER_VARIANTS}
-      className="flex flex-col gap-8 px-5 pb-20"
-    >
-      <AnimatePresence>
-        {toastMessage && (
-          <motion.div
-            initial={{ opacity: 0, y: 50, x: '-50%' }}
-            animate={{ opacity: 1, y: 0, x: '-50%' }}
-            exit={{ opacity: 0, y: 20, x: '-50%' }}
-            className="fixed bottom-24 left-1/2 bg-zinc-800 text-pure-white px-6 py-3 rounded-full shadow-2xl z-50 font-medium text-sm whitespace-nowrap"
-          >
-            {toastMessage}
-          </motion.div>
-        )}
+    const [isSyncing, setIsSyncing] = useState(false);
 
-        {simulatedPush && (
+    const handleSync = () => {
+        setIsSyncing(true);
+        // Simulate network delay
+        setTimeout(() => {
+            setIsSyncing(false);
+            setToastMessage("数据已成功同步至云端");
+        }, 1500);
+    };
+
+    return (
+      <motion.div 
+        initial="hidden"
+        animate="visible"
+        variants={CONTAINER_VARIANTS}
+        className="flex flex-col gap-8 px-5 pb-20"
+      >
+        <AnimatePresence>
+          {toastMessage && (
+            <motion.div
+              initial={{ opacity: 0, y: 50, x: '-50%' }}
+              animate={{ opacity: 1, y: 0, x: '-50%' }}
+              exit={{ opacity: 0, y: 20, x: '-50%' }}
+              className="fixed bottom-24 left-1/2 bg-zinc-800 text-pure-white px-6 py-3 rounded-full shadow-2xl z-50 font-medium text-sm whitespace-nowrap"
+            >
+              {toastMessage}
+            </motion.div>
+          )}
+
+          {isSyncing && (
+            <motion.div
+              initial={{ opacity: 0, y: -20, x: '-50%' }}
+              animate={{ opacity: 1, y: 0, x: '-50%' }}
+              exit={{ opacity: 0, y: -20, x: '-50%' }}
+              className="fixed top-24 left-1/2 bg-primary text-white px-6 py-2 rounded-full shadow-lg z-50 font-bold text-xs flex items-center gap-2"
+            >
+              <RefreshCcw className="w-3 h-3 animate-spin" />
+              正在同步数据...
+            </motion.div>
+          )}
+
+          {simulatedPush && (
           <motion.div
             initial={{ opacity: 0, y: -100, x: '-50%' }}
             animate={{ opacity: 1, y: 16, x: '-50%' }}
@@ -101,24 +124,24 @@ export default function ProfileView({ settings, setSettings, onNavigate, theme }
         )}
       </AnimatePresence>
       {/* Profile Header */}
-      <motion.header variants={ITEM_VARIANTS} className="flex flex-row items-center gap-4 py-4 relative">
-        <div className="absolute top-0 inset-x-0 h-40 bg-linear-to-b from-primary/10 to-transparent rounded-full blur-3xl -z-10"></div>
+      <motion.header variants={ITEM_VARIANTS} className="flex flex-row items-center gap-4 py-2 relative">
+        <div className="absolute top-0 inset-x-0 h-32 bg-linear-to-b from-primary/10 to-transparent rounded-full blur-3xl -z-10"></div>
         
         <div className="relative">
           <motion.div 
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="w-16 h-16 rounded-full p-0.5 glass-elevated shadow-md relative z-10"
+            className="w-14 h-14 rounded-full p-0.5 glass-elevated shadow-md relative z-10"
           >
             <div className="w-full h-full rounded-full bg-primary/10 flex items-center justify-center">
-               <span className="text-xl font-black text-primary">J</span>
+               <span className="text-lg font-black text-primary">J</span>
             </div>
           </motion.div>
         </div>
 
         <div className="flex flex-col flex-1">
-          <h2 className="text-2xl font-black tracking-tight text-zinc-900">Jay Yu</h2>
-          <p className="text-zinc-500 font-medium text-xs">欢迎回来</p>
+          <h2 className="text-xl font-black tracking-tight text-zinc-900 leading-tight">Jay Yu</h2>
+          <p className="text-zinc-500 font-bold text-[10px] uppercase tracking-wider">个人中心</p>
         </div>
       </motion.header>
 
@@ -146,7 +169,13 @@ export default function ProfileView({ settings, setSettings, onNavigate, theme }
             <SettingsItem icon={<Bell className="text-primary w-6 h-6" strokeWidth={2.5} />} label="消息通知">
               <Toggle active={notificationsEnabled} onChange={handleToggleNotifications} />
             </SettingsItem>
-            <SettingsItem icon={<RefreshCcw className="text-primary w-6 h-6" strokeWidth={2.5} />} label="数据同步" />
+            <SettingsItem 
+              icon={<RefreshCcw className={cn("text-primary w-6 h-6", isSyncing && "animate-spin")} strokeWidth={2.5} />} 
+              label="数据同步" 
+              onClick={handleSync}
+            >
+              {isSyncing && <span className="text-xs font-bold text-primary mr-2">同步中...</span>}
+            </SettingsItem>
             <SettingsItem 
               icon={<Palette className="text-primary w-6 h-6" strokeWidth={2.5} />} 
               label="外观设置" 

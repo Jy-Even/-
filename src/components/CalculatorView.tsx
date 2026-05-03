@@ -43,14 +43,33 @@ export default function CalculatorView({ settings, setSettings, onSave }: Calcul
   const [showToast, setShowToast] = useState(false);
 
   const [showOvertimeForm, setShowOvertimeForm] = useState(false);
+  const [showAttendanceForm, setShowAttendanceForm] = useState(false);
+  const [attendanceType, setAttendanceType] = useState<'Late' | 'Leave' | 'Regular'>('Regular');
+  const [attendanceDuration, setAttendanceDuration] = useState(1);
+  
   const [overtimeStart, setOvertimeStart] = useState('18:00');
   const [overtimeEnd, setOvertimeEnd] = useState('21:00');
   const [overtimeType, setOvertimeType] = useState<'Workday' | 'Weekend' | 'Holiday'>('Workday');
 
-  const dailyPay = baseSalary / 21.75;
+  const getDaysPerMonth = (type: string) => {
+    switch (type) {
+      case 'Single': return 26;
+      case 'Big-Small': return 24;
+      case 'Double': default: return 21.75;
+    }
+  };
+
+  const daysPerMonth = getDaysPerMonth(activeSchedule);
+  const dailyPay = baseSalary / daysPerMonth;
   const hourlyPay = hours > 0 ? dailyPay / hours : 0;
   const socialSecurity = baseSalary * 0.225;
   const netSalary = Math.max(0, baseSalary - socialSecurity);
+
+  const setWorkPreset = (h: number, schedule: 'Double' | 'Single' | 'Big-Small') => {
+    setHours(h);
+    setActiveSchedule(schedule);
+    setSettings({ ...settings, dailyHours: h, scheduleType: schedule });
+  };
 
   const startDate = new Date(`2000-01-01T${overtimeStart}`);
   const endDate = new Date(`2000-01-01T${overtimeEnd}`);
@@ -71,6 +90,41 @@ export default function CalculatorView({ settings, setSettings, onSave }: Calcul
       estimatedPay: overtimePay
     });
     setShowOvertimeForm(false);
+    triggerToast();
+  };
+
+  const handleSaveAttendance = (type: 'Regular' | 'Late' | 'Leave') => {
+    if (type === 'Regular') {
+      onSave({
+        id: Math.random().toString(36).substr(2, 9),
+        date: new Date().toISOString().split('T')[0],
+        type: 'Regular',
+        subtype: 'Workday',
+        duration: hours,
+        estimatedPay: dailyPay
+      });
+      triggerToast();
+    } else {
+      setAttendanceType(type === 'Late' ? 'Late' : 'Leave');
+      setAttendanceDuration(type === 'Late' ? 0.5 : 8);
+      setShowAttendanceForm(true);
+    }
+  };
+
+  const handleConfirmAttendance = () => {
+    const isLate = attendanceType === 'Late';
+    const penaltyMultiplier = isLate ? -0.5 : -1.0; // Simple logic: half pay deduction for minor late, full for leave
+    const estimatedImpact = hourlyPay * attendanceDuration * penaltyMultiplier;
+
+    onSave({
+      id: Math.random().toString(36).substr(2, 9),
+      date: new Date().toISOString().split('T')[0],
+      type: isLate ? 'Penalty' : 'Leave',
+      subtype: isLate ? 'Late' : 'Unpaid',
+      duration: attendanceDuration,
+      estimatedPay: estimatedImpact
+    });
+    setShowAttendanceForm(false);
     triggerToast();
   };
 
@@ -177,10 +231,36 @@ export default function CalculatorView({ settings, setSettings, onSave }: Calcul
 
       {/* Work System Section */}
       <motion.section variants={ITEM_VARIANTS} className="flex flex-col gap-3">
-        <h2 className="text-[14px] font-bold text-zinc-400 uppercase tracking-widest pl-2">
+        <h2 className="text-[14px] font-bold text-zinc-400 uppercase tracking-widest pl-2 flex justify-between items-center">
           工时制度
+          <span className="text-[10px] font-medium lowercase tracking-normal text-zinc-300">月均工作 {daysPerMonth} 天</span>
         </h2>
         <div className="glass rounded-[32px] p-6 flex flex-col gap-6 shadow-xl">
+          {/* Work Presets */}
+          <div className="flex flex-col gap-3">
+            <span className="text-sm font-bold text-zinc-500 pl-1 uppercase tracking-wide">快速预设</span>
+            <div className="grid grid-cols-3 gap-2">
+              <PresetButton 
+                label="955" 
+                sub="均衡" 
+                active={hours === 8 && activeSchedule === 'Double'} 
+                onClick={() => setWorkPreset(8, 'Double')} 
+              />
+              <PresetButton 
+                label="996" 
+                sub="奋斗" 
+                active={hours === 12 && activeSchedule === 'Single'} 
+                onClick={() => setWorkPreset(12, 'Single')} 
+              />
+              <PresetButton 
+                label="大小周" 
+                sub="灵活" 
+                active={hours === 9 && activeSchedule === 'Big-Small'} 
+                onClick={() => setWorkPreset(9, 'Big-Small')} 
+              />
+            </div>
+          </div>
+
           <div className="flex flex-col gap-3">
             <span className="text-sm font-bold text-zinc-500 pl-1 uppercase tracking-wide">排班类型</span>
             <div className="bg-zinc-100 p-1 rounded-2xl flex gap-1 inner-shadow">
@@ -234,10 +314,26 @@ export default function CalculatorView({ settings, setSettings, onSave }: Calcul
         </h2>
         <div className="glass rounded-[32px] p-6 shadow-xl">
           <div className="grid grid-cols-2 gap-3">
-            <AttendanceButton icon={<CheckCircle2 strokeWidth={2.5} className="w-8 h-8 text-green-500" />} label="正常出勤" />
-            <AttendanceButton icon={<Clock strokeWidth={2.5} className="w-8 h-8 text-orange-500" />} label="迟到/早退" />
-            <AttendanceButton icon={<CalendarOff strokeWidth={2.5} className="w-8 h-8 text-red-500" />} label="请假/缺勤" />
-            <AttendanceButton icon={<Briefcase strokeWidth={2.5} className="w-8 h-8 text-primary" />} label="加班申请" onClick={() => setShowOvertimeForm(true)} />
+            <AttendanceButton 
+              icon={<CheckCircle2 strokeWidth={2.5} className="w-8 h-8 text-green-500" />} 
+              label="正常出勤" 
+              onClick={() => handleSaveAttendance('Regular')}
+            />
+            <AttendanceButton 
+              icon={<Clock strokeWidth={2.5} className="w-8 h-8 text-orange-500" />} 
+              label="迟到/早退" 
+              onClick={() => handleSaveAttendance('Late')}
+            />
+            <AttendanceButton 
+              icon={<CalendarOff strokeWidth={2.5} className="w-8 h-8 text-red-500" />} 
+              label="请假/缺勤" 
+              onClick={() => handleSaveAttendance('Leave')}
+            />
+            <AttendanceButton 
+              icon={<Briefcase strokeWidth={2.5} className="w-8 h-8 text-primary" />} 
+              label="加班申请" 
+              onClick={() => setShowOvertimeForm(true)} 
+            />
           </div>
         </div>
       </motion.section>
@@ -335,6 +431,71 @@ export default function CalculatorView({ settings, setSettings, onSave }: Calcul
         </motion.div>
       </div>
 
+      {/* Attendance Modal */}
+      <AnimatePresence>
+        {showAttendanceForm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-end justify-center bg-zinc-900/40 backdrop-blur-sm sm:items-center p-4 pb-24"
+            onClick={() => setShowAttendanceForm(false)}
+          >
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-lg bg-white rounded-[40px] p-8 shadow-2xl flex flex-col gap-6"
+            >
+              <div className="flex justify-between items-center">
+                <h3 className="text-xl font-bold text-zinc-900">
+                  {attendanceType === 'Late' ? '迟到/早退记录' : '请假/缺勤记录'}
+                </h3>
+                <button onClick={() => setShowAttendanceForm(false)} className="p-2 bg-zinc-100 rounded-full text-zinc-500">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="flex flex-col gap-6">
+                <div className="flex flex-col gap-3">
+                  <label className="text-sm font-bold text-zinc-500 flex justify-between">
+                    <span>影响时长</span>
+                    <span className="text-zinc-900 font-black">{attendanceDuration} 小时</span>
+                  </label>
+                  <input 
+                    type="range" 
+                    min="0.5" 
+                    max={attendanceType === 'Late' ? 4 : (hours || 8)} 
+                    step="0.5" 
+                    value={attendanceDuration}
+                    onChange={(e) => setAttendanceDuration(parseFloat(e.target.value))}
+                    className="accent-red-500"
+                  />
+                </div>
+
+                <div className="bg-red-50 rounded-2xl p-5 border border-red-100 flex justify-between items-center">
+                  <div className="flex flex-col">
+                    <span className="text-xs font-bold text-red-600 mb-1">预计薪资减项</span>
+                    <span className="text-2xl font-black text-red-600">
+                      -{formatCurrency(hourlyPay * attendanceDuration * (attendanceType === 'Late' ? 0.5 : 1))}
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleConfirmAttendance}
+                  className="w-full py-5 bg-zinc-900 text-white rounded-2xl font-bold hover:bg-black transition-colors"
+                >
+                  确认保存
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Overtime Modal */}
       <AnimatePresence>
         {showOvertimeForm && (
@@ -419,6 +580,23 @@ export default function CalculatorView({ settings, setSettings, onSave }: Calcul
   );
 }
 
+
+function PresetButton({ label, sub, active, onClick }: { label: string, sub: string, active: boolean, onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        "flex flex-col items-center justify-center py-3 rounded-2xl border-2 transition-all gap-0.5",
+        active 
+          ? "border-primary bg-primary/5 text-primary" 
+          : "border-zinc-50 bg-zinc-50/50 text-zinc-400"
+      )}
+    >
+      <span className="text-sm font-black">{label}</span>
+      <span className="text-[9px] font-bold uppercase opacity-60">{sub}</span>
+    </button>
+  );
+}
 
 function ToggleOption({ active, onClick, label }: { active: boolean, onClick: () => void, label: string }) {
   return (
