@@ -1,0 +1,73 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  
+  --color-primary: #007AFF;
+  --color-primary-light: #47A1FF;
+  --color-background: #F2F2F7;
+  
+  --radius-2xl: 1.5rem;
+  --radius-3xl: 1.75rem;
+  --radius-4xl: 2rem;
+  --radius-5xl: 2.5rem;
+}
+
+@layer utilities {
+  .glass {
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.03), 0 0 1px 0 rgba(0, 0, 0, 0.05);
+  }
+  
+  .glass-elevated {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(50px);
+    -webkit-backdrop-filter: blur(50px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 0 12px 40px -4px rgba(0, 0, 0, 0.08), 0 0 1px 0 rgba(0, 0, 0, 0.1);
+  }
+
+  .mesh-bg {
+    background-color: #f1f3fe;
+    background-image: 
+        radial-gradient(at 10% 10%, rgba(216, 226, 255, 0.6) 0, transparent 40%), 
+        radial-gradient(at 90% 10%, rgba(255, 219, 204, 0.4) 0, transparent 40%),
+        radial-gradient(at 50% 90%, rgba(230, 232, 243, 0.5) 0, transparent 50%);
+    background-attachment: fixed;
+    background-size: cover;
+  }
+  
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-linear-to-r from-primary to-[#00C6FF];
+  }
+
+  .inner-shadow {
+    box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+  }
+
+  .squircle-lg {
+    border-radius: 28px;
+  }
+}
+
+body {
+  @apply bg-background text-zinc-900 font-sans antialiased overflow-x-hidden;
+  min-height: 100dvh;
+  letter-spacing: -0.011em;
+}
+
+h1, h2, h3 {
+  letter-spacing: -0.025em;
+}
+
+input[type="range"] {
+  @apply h-1.5 w-full cursor-pointer appearance-none rounded-lg bg-zinc-200 accent-primary;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  @apply h-6 w-6 appearance-none rounded-full border-2 border-white bg-primary shadow-lg ring-4 ring-primary/10 transition-all active:scale-95;
+}
