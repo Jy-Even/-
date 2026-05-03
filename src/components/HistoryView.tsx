@@ -81,7 +81,7 @@ export default function HistoryView({ history, onViewDetail, onEdit, onDelete }:
         variants={ITEM_VARIANTS}
         className="relative pt-2"
       >
-        <div className="glass-elevated rounded-3xl p-5 flex flex-col items-center bg-linear-to-br from-white/90 to-white/60 shadow-xl relative overflow-hidden border-t-2 border-white">
+        <div className="glass-elevated rounded-3xl p-5 flex flex-col items-center shadow-xl relative overflow-hidden">
           {/* Subtle Decorative Elements */}
           <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/5 rounded-full blur-3xl"></div>
           
@@ -101,11 +101,11 @@ export default function HistoryView({ history, onViewDetail, onEdit, onDelete }:
           </div>
 
           <div className="w-full grid grid-cols-2 gap-4">
-            <div className="bg-white/40 p-4 rounded-2xl flex flex-col items-center border border-white/50 backdrop-blur-sm">
+            <div className="glass p-4 rounded-2xl flex flex-col items-center shadow-xs">
               <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1">月均收入</span>
               <span className="text-lg font-black font-mono text-zinc-800">¥{(annualTotal / 12).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
             </div>
-            <div className="bg-white/40 p-4 rounded-2xl flex flex-col items-center border border-white/50 backdrop-blur-sm">
+            <div className="glass p-4 rounded-2xl flex flex-col items-center shadow-xs">
               <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1">年度增幅</span>
               <span className="text-lg font-black font-mono text-green-500">+12.5%</span>
             </div>
@@ -125,20 +125,20 @@ export default function HistoryView({ history, onViewDetail, onEdit, onDelete }:
 
         {/* Year Selector Floating */}
         <div className="flex justify-center mt-6">
-          <div className="flex items-center gap-6 bg-zinc-100/80 backdrop-blur-md p-1.5 rounded-full border border-white shadow-sm">
-            <motion.button 
-              whileTap={{ scale: 0.9 }}
-              onClick={() => setSelectedYear(prev => prev - 1)}
-              className="p-2 rounded-full hover:bg-white transition-all text-zinc-400 hover:text-primary active:shadow-inner"
-            >
+          <div className="flex items-center gap-6 glass p-1.5 rounded-full shadow-sm">
+              <motion.button 
+                whileTap={{ scale: 0.9 }}
+                onClick={() => setSelectedYear(prev => prev - 1)}
+                className="p-2 rounded-full hover:bg-primary/10 transition-all text-zinc-400 hover:text-primary"
+              >
               <ChevronLeft className="w-5 h-5" />
             </motion.button>
             <span className="text-lg font-black tracking-tight px-2 text-zinc-800">{selectedYear}</span>
-            <motion.button 
-              whileTap={{ scale: 0.9 }}
-              onClick={() => setSelectedYear(prev => prev + 1)}
-              className="p-2 rounded-full hover:bg-white transition-all text-zinc-400 hover:text-primary active:shadow-inner"
-            >
+              <motion.button 
+                whileTap={{ scale: 0.9 }}
+                onClick={() => setSelectedYear(prev => prev + 1)}
+                className="p-2 rounded-full hover:bg-primary/10 transition-all text-zinc-400 hover:text-primary"
+              >
               <ChevronRight className="w-5 h-5" />
             </motion.button>
           </div>
@@ -176,16 +176,16 @@ export default function HistoryView({ history, onViewDetail, onEdit, onDelete }:
               </div>
 
               {/* Data Card */}
-              <motion.div 
-                layout
-                onClick={() => setExpandedId(isExpanded ? null : item.id)}
-                className={cn(
-                  "flex-1 rounded-[24px] p-5 transition-all cursor-pointer border",
-                  isExpanded 
-                    ? "glass-elevated border-primary/20 shadow-2xl scale-[1.01] z-10" 
-                    : "bg-white/50 border-white/60 hover:bg-white/80 active:scale-95"
-                )}
-              >
+                <motion.div 
+                  layout
+                  onClick={() => setExpandedId(isExpanded ? null : item.id)}
+                  className={cn(
+                    "flex-1 rounded-[24px] p-5 transition-all cursor-pointer border",
+                    isExpanded 
+                      ? "glass-elevated border-primary/20 shadow-2xl scale-[1.01] z-10" 
+                      : "glass border-zinc-200/20 hover:border-zinc-300/40 active:scale-95 shadow-xs"
+                  )}
+                >
                 <div className="flex justify-between items-center">
                   <div className="flex flex-col">
                     <h3 className={cn(
@@ -216,7 +216,7 @@ export default function HistoryView({ history, onViewDetail, onEdit, onDelete }:
                       exit={{ height: 0, opacity: 0 }}
                       className="overflow-hidden"
                     >
-                      <div className="mt-5 space-y-3 pb-4 bg-zinc-50/50 p-4 rounded-3xl border border-zinc-100">
+                      <div className="mt-5 space-y-3 pb-4 glass p-4 rounded-3xl border border-zinc-200/20">
                         <DetailRow label="基本工资" value={formatCurrency(item.baseAmount)} />
                         <DetailRow label="绩效奖金" value={formatCurrency(item.bonus)} />
                         <DetailRow label="五险一金" value={`-${formatCurrency(item.socialSecurity)}`} color="text-red-500" />
@@ -265,8 +265,8 @@ function ActionButton({ label, variant = 'default', onClick }: { label: string, 
       className={cn(
         "flex-1 flex justify-center items-center gap-1.5 py-2.5 rounded-full text-[13px] font-bold transition-colors",
         variant === 'danger' 
-          ? "bg-red-50 text-red-600 hover:bg-red-100" 
-          : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
+          ? "bg-red-500/10 text-red-500 hover:bg-red-500/20" 
+          : "glass text-zinc-600 hover:text-zinc-900 shadow-xs"
       )}
     >
       {label}

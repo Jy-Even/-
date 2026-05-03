@@ -43,7 +43,7 @@ export default function CalendarView() {
   const calendarDays = [];
   // Adjusted for Monday start if needed, but let's stick to Sunday for simplicity first or use standard 0-6
   for (let i = 0; i < firstDay; i++) {
-    calendarDays.push(<div key={`empty-${i}`} className="h-12" />);
+    calendarDays.push(<div key={`empty-${i}`} className="h-10" />);
   }
 
   for (let d = 1; d <= days; d++) {
@@ -57,8 +57,8 @@ export default function CalendarView() {
         whileTap={{ scale: 0.95 }}
         onClick={() => setSelectedDate(d)}
         className={cn(
-          "h-12 w-full rounded-2xl flex items-center justify-center text-sm font-bold transition-all relative",
-          isSelected ? "bg-primary text-pure-white shadow-lg shadow-primary/30" : "text-zinc-600 hover:bg-zinc-100",
+          "h-10 w-full rounded-xl flex items-center justify-center text-xs font-bold transition-all relative",
+          isSelected ? "bg-primary text-white shadow-lg shadow-primary/30" : "text-zinc-600 hover:bg-zinc-100",
           isToday && !isSelected && "text-primary border border-primary/20 bg-primary/5"
         )}
       >
@@ -78,33 +78,33 @@ export default function CalendarView() {
       className="flex flex-col gap-6 px-5 pb-32"
     >
       {/* Calendar Header */}
-      <motion.section variants={ITEM_VARIANTS} className="glass rounded-[32px] p-6 shadow-xl space-y-6">
+      <motion.section variants={ITEM_VARIANTS} className="glass rounded-[32px] p-5 shadow-xl space-y-4">
         <div className="flex justify-between items-center px-2">
           <div className="flex flex-col">
-            <span className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em]">{year}年</span>
-            <h3 className="text-2xl font-black text-zinc-900">{monthNames[month]}</h3>
+            <span className="text-[9px] font-black text-zinc-400 uppercase tracking-[0.2em]">{year}年</span>
+            <h3 className="text-xl font-black text-zinc-900">{monthNames[month]}</h3>
           </div>
           <div className="flex gap-2">
             <motion.button 
               whileTap={{ scale: 0.9 }}
               onClick={prevMonth}
-              className="p-2.5 rounded-full bg-zinc-100 text-zinc-600 hover:bg-zinc-200 transition-colors"
+              className="p-2 rounded-full bg-zinc-100 text-zinc-600 hover:bg-zinc-200 transition-colors"
             >
-              <ChevronLeft className="w-5 h-5" />
+              <ChevronLeft className="w-4 h-4" />
             </motion.button>
             <motion.button 
               whileTap={{ scale: 0.9 }}
               onClick={nextMonth}
-              className="p-2.5 rounded-full bg-zinc-100 text-zinc-600 hover:bg-zinc-200 transition-colors"
+              className="p-2 rounded-full bg-zinc-100 text-zinc-600 hover:bg-zinc-200 transition-colors"
             >
-              <ChevronRight className="w-5 h-5" />
+              <ChevronRight className="w-4 h-4" />
             </motion.button>
           </div>
         </div>
 
         <div className="grid grid-cols-7 gap-1">
           {["日", "一", "二", "三", "四", "五", "六"].map(d => (
-            <div key={d} className="h-10 flex items-center justify-center text-[11px] font-black text-zinc-400 uppercase tracking-widest">
+            <div key={d} className="h-8 flex items-center justify-center text-[10px] font-black text-zinc-400 uppercase tracking-widest">
               {d}
             </div>
           ))}

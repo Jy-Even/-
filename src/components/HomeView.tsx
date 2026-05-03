@@ -53,84 +53,112 @@ export default function HomeView({ settings, accumulated, perSecond, onAction }:
       variants={CONTAINER_VARIANTS}
       className="flex flex-col gap-6 px-5"
     >
-      {/* Main Dashboard Card - Redesigned with Glassmorphism */}
+      {/* Main Dashboard Card - Redesigned with Enhanced Glassmorphism */}
       <motion.section 
         variants={ITEM_VARIANTS}
         whileHover={{ scale: 1.01, translateY: -2 }}
-        whileTap={{ scale: 0.98 }}
+        whileTap={{ scale: 0.99 }}
         onClick={() => onAction?.('realtimeSalary')}
         className="relative group cursor-pointer"
       >
-        {/* Animated Glow Background Layers */}
-        <div className="absolute -inset-4 bg-linear-to-r from-primary/10 via-transparent to-primary/5 blur-3xl opacity-50 group-hover:opacity-80 transition-opacity -z-10" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-radial from-primary/10 to-transparent blur-[120px] -z-10 animate-pulse" />
+        {/* Animated Mesh Gradient Background Layers */}
+        <div className="absolute -inset-6 bg-radial from-primary/15 via-transparent to-transparent blur-[100px] opacity-40 group-hover:opacity-70 transition-opacity duration-1000 -z-10 animate-pulse" />
+        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-[80px] -mr-32 -mt-32 -z-20 animate-slow-float" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary/5 rounded-full blur-[80px] -ml-32 -mb-32 -z-20 animate-slow-float-delayed" />
 
-        <div className="glass-elevated rounded-[40px] p-10 flex flex-col items-center text-center relative overflow-hidden border border-white/60 shadow-[0_48px_100px_rgba(0,0,0,0.1)]">
-          {/* Subtle Grid Pattern Overlay */}
-          <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, var(--color-primary) 1px, transparent 1px)', backgroundSize: '32px 32px' }} />
+        <div className="glass-elevated rounded-[48px] p-8 sm:p-10 flex flex-col items-center text-center relative overflow-hidden shadow-[0_48px_100px_rgba(0,0,0,0.08)] border border-white/40">
+          {/* Noise/Grain Texture Layer */}
+          <div className="absolute inset-0 opacity-[0.015] pointer-events-none mix-blend-overlay" style={{ backgroundImage: 'url("https://grainy-gradients.vercel.app/noise.svg")' }} />
           
-          <div className="relative z-10 flex flex-col items-center">
+          {/* Subtle Grid Accent */}
+          <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, var(--color-primary) 0.8px, transparent 0.8px)', backgroundSize: '24px 24px' }} />
+          
+          <div className="relative z-10 flex flex-col items-center w-full">
+            {/* Status Badge */}
             <motion.div 
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex items-center gap-2 mb-6 px-4 py-1.5 rounded-full bg-white/40 border border-white/60 backdrop-blur-md shadow-xs"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="flex items-center gap-2 mb-8 px-4 py-2 rounded-full glass border border-zinc-200/20 shadow-xs backdrop-blur-2xl"
             >
-              <div className="relative">
-                <div className="absolute w-2 h-2 rounded-full bg-primary animate-ping" />
-                <div className="relative w-2 h-2 rounded-full bg-primary" />
+              <div className="relative flex">
+                <span className="absolute inline-flex h-full w-full rounded-full bg-primary opacity-75 animate-ping" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
               </div>
-              <span className="text-[10px] font-black text-primary uppercase tracking-[0.25em]">实时累计工资</span>
+              <span className="text-[10px] font-black text-primary uppercase tracking-[0.3em] leading-none">实时计薪中</span>
             </motion.div>
 
-            <div className="flex items-baseline mb-4 relative">
-              <span className="text-3xl font-black mr-2 text-primary/30">¥</span>
-              <div className="flex items-baseline">
-                <motion.span 
-                  key={Math.floor(accumulated)}
-                  initial={{ y: 5, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  className="text-7xl font-black tracking-tighter text-zinc-900 tabular-nums drop-shadow-sm"
-                >
-                  {Math.floor(accumulated).toLocaleString('zh-CN')}
-                </motion.span>
-                <span className="text-3xl font-black text-primary/60 tabular-nums">
-                  .{(accumulated % 1).toFixed(2).split('.')[1]}
-                </span>
+            {/* Main Salary Display */}
+            <div className="flex flex-col items-center mb-10 w-full">
+              <div className="flex items-baseline relative">
+                <span className="text-3xl font-black mr-2 text-zinc-300 drop-shadow-sm">¥</span>
+                <div className="flex items-baseline">
+                  <motion.span 
+                    key={Math.floor(accumulated)}
+                    initial={{ y: 8, opacity: 0, filter: 'blur(4px)' }}
+                    animate={{ y: 0, opacity: 1, filter: 'blur(0px)' }}
+                    className="text-7xl sm:text-8xl font-black tracking-tighter text-zinc-900 tabular-nums"
+                  >
+                    {Math.floor(accumulated).toLocaleString('zh-CN')}
+                  </motion.span>
+                  <span className="text-4xl font-black text-primary/60 tabular-nums ml-1">
+                    .{(accumulated % 1).toFixed(2).split('.')[1]}
+                  </span>
+                </div>
               </div>
+              <span className="text-xs font-bold text-zinc-400 mt-2 tracking-wide">本月累计预估收益</span>
             </div>
 
-            <div className="flex items-center gap-6 mb-8">
-              <div className="flex flex-col items-center">
-                <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">今日收益</span>
-                <span className="text-base font-black text-green-500 tracking-tight flex items-center gap-1">
-                  <TrendingUp className="w-3.5 h-3.5" />
-                  ¥456.78
-                </span>
+            {/* Metrics Dashboard Row */}
+            <div className="w-full grid grid-cols-2 gap-4 mb-10">
+              <div className="flex flex-col items-center p-4 rounded-3xl glass-elevated border border-white/20">
+                <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">今日已赚</span>
+                <div className="flex items-center gap-1">
+                  <TrendingUp className="w-3.5 h-3.5 text-emerald-500" />
+                  <span className="text-lg font-black text-emerald-600 tracking-tight tabular-nums">456.78</span>
+                </div>
               </div>
-              <div className="w-[1px] h-6 bg-zinc-200" />
-              <div className="flex flex-col items-center">
+              <div className="flex flex-col items-center p-4 rounded-3xl glass-elevated border border-white/20">
                 <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">预估时薪</span>
-                <span className="text-base font-black text-zinc-800 tracking-tight">¥{(perSecond * 3600).toFixed(1)}</span>
+                <span className="text-lg font-black text-zinc-800 tracking-tight tabular-nums">¥{(perSecond * 3600).toFixed(1)}</span>
               </div>
             </div>
             
-            <div className="inline-flex items-center gap-3 bg-zinc-900 px-6 py-3 rounded-full border border-zinc-800 shadow-lg shadow-zinc-200 transition-transform group-hover:scale-105 active:scale-95 overflow-hidden relative">
-              {/* Scanline reflection animation */}
-              <motion.div 
-                animate={{ x: ['100%', '-100%'] }}
-                transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
-                className="absolute inset-0 bg-linear-to-r from-transparent via-white/5 to-transparent -skew-x-20 pointer-events-none"
-              />
-              <span className="text-[11px] font-mono font-black text-white tracking-widest flex items-center gap-2">
-                <span className="text-primary tracking-normal font-sans">收益速率:</span> 
-                ¥{perSecond.toFixed(4)} <span className="text-zinc-500 font-normal">/ 秒</span>
-              </span>
+            {/* Live Rate Module - Theme-Aware & Dynamic */}
+            <div className="w-full relative px-6 py-5 rounded-[32px] glass-elevated border border-white/20 shadow-inner group/rate">
+              {/* Dynamic Glow Effect */}
+              <div className="absolute inset-0 bg-radial from-primary/5 to-transparent opacity-40 -z-10" />
+              
+              <div className="flex justify-between items-center relative z-10">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-2xl bg-zinc-100 flex items-center justify-center shrink-0">
+                    <TrendingUp className="w-5 h-5 text-primary" />
+                  </div>
+                  <div className="flex flex-col items-start leading-none gap-1.5">
+                    <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">盈利速率</span>
+                    <div className="flex items-center gap-1">
+                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      <span className="text-[10px] font-bold text-emerald-600/80">实时计算中</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex flex-col items-end">
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-2xl font-mono font-black text-zinc-900 tabular-nums">
+                      ¥{perSecond.toFixed(4)}
+                    </span>
+                    <span className="text-[10px] font-black text-primary uppercase tracking-tighter">/ 秒</span>
+                  </div>
+                  <span className="text-[9px] font-bold text-zinc-400 italic">
+                    ≈ ¥{(perSecond * 3600).toFixed(2)} / 小时
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Decorative Corner Radii */}
-          <div className="absolute top-0 right-0 w-24 h-24 bg-linear-to-br from-primary/10 to-transparent blur-2xl -mr-12 -mt-12" />
-          <div className="absolute bottom-0 left-0 w-24 h-24 bg-linear-to-tl from-primary/10 to-transparent blur-2xl -ml-12 -mb-12" />
+          {/* Decorative Corner Geometry */}
+          <div className="absolute top-0 right-0 w-32 h-32 bg-linear-to-br from-primary/20 to-transparent rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none opacity-50" />
         </div>
       </motion.section>
 
@@ -168,7 +196,7 @@ export default function HomeView({ settings, accumulated, perSecond, onAction }:
       {/* Monthly Overview Card */}
       <motion.section 
         variants={ITEM_VARIANTS}
-        className="glass-elevated rounded-[40px] p-8 shadow-2xl overflow-hidden relative group border border-white/60"
+        className="glass-elevated rounded-[40px] p-8 shadow-2xl overflow-hidden relative group"
         onClick={() => onAction?.('history')}
       >
         {/* Subtle Background Glow for the Card */}
@@ -183,7 +211,7 @@ export default function HomeView({ settings, accumulated, perSecond, onAction }:
           <motion.div 
             whileHover={{ scale: 1.1, rotate: 45 }}
             whileTap={{ scale: 0.9 }}
-            className="w-10 h-10 rounded-full bg-white border border-zinc-100 flex items-center justify-center cursor-pointer shadow-sm group-hover:bg-primary group-hover:border-primary transition-all duration-300"
+            className="w-10 h-10 rounded-full bg-zinc-50 border border-zinc-200 flex items-center justify-center cursor-pointer shadow-sm group-hover:bg-primary group-hover:border-primary transition-all duration-300"
           >
             <ArrowUpRight className="text-zinc-400 group-hover:text-white w-5 h-5 transition-colors" />
           </motion.div>
@@ -232,7 +260,7 @@ export default function HomeView({ settings, accumulated, perSecond, onAction }:
           </ResponsiveContainer>
         </div>
 
-        <div className="grid grid-cols-3 divide-x divide-zinc-100 py-4 bg-white/40 backdrop-blur-sm rounded-[28px] border border-white shadow-sm relative z-10">
+        <div className="grid grid-cols-3 divide-x divide-zinc-200/50 py-4 glass rounded-[28px] shadow-sm relative z-10">
           <OverviewItem label="预估月薪" value={formatCurrency(settings.baseSalary).split('.')[0]} />
           <OverviewItem label="五险一金" value={formatCurrency(settings.baseSalary * 0.225).split('.')[0]} color="text-zinc-400" />
           <OverviewItem label="预估实发" value={formatCurrency(settings.baseSalary * 0.775).split('.')[0]} color="text-primary" />

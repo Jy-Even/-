@@ -7,6 +7,10 @@ export interface SalarySettings {
   salaryMode: 'Monthly' | 'Annual';
   scheduleType: ScheduleType;
   dailyHours: number;
+  pensionRate: number;
+  medicalRate: number;
+  unemploymentRate: number;
+  housingRate: number;
 }
 
 export interface SalaryRecord {

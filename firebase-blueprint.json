@@ -1,0 +1,45 @@
+{
+  "entities": {
+    "UserSettings": {
+      "title": "User Settings",
+      "description": "Global settings for the user's salary and work schedule",
+      "type": "object",
+      "properties": {
+        "baseSalary": { "type": "number" },
+        "salaryMode": { "type": "string", "enum": ["Monthly", "Annual"] },
+        "scheduleType": { "type": "string", "enum": ["Double", "Single", "Big-Small"] },
+        "dailyHours": { "type": "number" },
+        "pensionRate": { "type": "number" },
+        "medicalRate": { "type": "number" },
+        "unemploymentRate": { "type": "number" },
+        "housingRate": { "type": "number" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["baseSalary", "salaryMode", "scheduleType", "dailyHours"]
+    },
+    "SalaryRecord": {
+      "title": "Salary Record",
+      "description": "A specific income/deduction event",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "date": { "type": "string", "format": "date" },
+        "type": { "type": "string", "enum": ["Overtime", "Leave", "Comp", "Regular", "Penalty"] },
+        "subtype": { "type": "string", "enum": ["Workday", "Weekend", "Holiday", "Late", "Unpaid"] },
+        "duration": { "type": "number" },
+        "estimatedPay": { "type": "number" }
+      },
+      "required": ["id", "date", "type", "subtype", "duration", "estimatedPay"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserSettings",
+      "description": "User profile and global salary settings"
+    },
+    "/users/{userId}/records/{recordId}": {
+      "schema": "SalaryRecord",
+      "description": "Individual salary change records for the user"
+    }
+  }
+}

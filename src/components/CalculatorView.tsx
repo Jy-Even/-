@@ -182,11 +182,40 @@ export default function CalculatorView({ settings, setSettings, onSave }: Calcul
         <h2 className="text-[14px] font-bold text-zinc-400 uppercase tracking-widest pl-2">
           薪资设置
         </h2>
-        <div className="glass rounded-[32px] p-6 flex flex-col gap-6 shadow-xl">
-          <div className="flex flex-col items-center justify-center py-5 bg-zinc-50/50 rounded-[28px] border border-zinc-100">
-            <span className="text-xs font-bold text-zinc-400 mb-2 uppercase tracking-wide">基本薪资</span>
+        <div className="glass rounded-[32px] p-6 flex flex-col gap-6 shadow-xl border border-white/40">
+          <div className="flex flex-col items-center justify-center py-6 bg-zinc-50/80 rounded-[28px] border border-zinc-200/50 shadow-inner">
+            <div className="flex bg-zinc-200/50 p-1 rounded-full mb-6 max-w-[200px] w-full">
+              <button 
+                onClick={() => {
+                  setActiveMode('Monthly');
+                  setSettings({ ...settings, salaryMode: 'Monthly' });
+                }}
+                className={cn(
+                  "flex-1 py-1.5 rounded-full text-xs font-black transition-all",
+                  activeMode === 'Monthly' ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-400 hover:text-zinc-600"
+                )}
+              >
+                月薪制
+              </button>
+              <button 
+                onClick={() => {
+                  setActiveMode('Annual');
+                  setSettings({ ...settings, salaryMode: 'Annual' });
+                }}
+                className={cn(
+                  "flex-1 py-1.5 rounded-full text-xs font-black transition-all",
+                  activeMode === 'Annual' ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-400 hover:text-zinc-600"
+                )}
+              >
+                年薪制
+              </button>
+            </div>
+
+            <span className="text-[10px] font-bold text-zinc-400 mb-1 uppercase tracking-widest">
+              {activeMode === 'Monthly' ? '基本月薪' : '基本年薪'}
+            </span>
             <div className="flex items-baseline gap-1 cursor-pointer" onClick={() => setIsEditingSalary(true)}>
-              <span className="text-2xl font-bold text-zinc-400">¥</span>
+              <span className={cn("text-2xl font-black", activeMode === 'Monthly' ? "text-primary/40" : "text-orange-500/40")}>¥</span>
               {isEditingSalary ? (
                 <input
                   autoFocus
@@ -206,25 +235,10 @@ export default function CalculatorView({ settings, setSettings, onSave }: Calcul
                 </span>
               )}
             </div>
-          </div>
-          
-          <div className="bg-zinc-100 p-1 rounded-2xl flex gap-1 inner-shadow">
-            <ToggleOption 
-              active={activeMode === 'Monthly'} 
-              onClick={() => {
-                setActiveMode('Monthly');
-                setSettings({ ...settings, salaryMode: 'Monthly' });
-              }} 
-              label="月薪" 
-            />
-            <ToggleOption 
-              active={activeMode === 'Annual'} 
-              onClick={() => {
-                setActiveMode('Annual');
-                setSettings({ ...settings, salaryMode: 'Annual' });
-              }} 
-              label="年薪" 
-            />
+            
+            <p className="mt-4 text-[10px] font-bold text-zinc-400 italic">
+              {activeMode === 'Annual' ? `折合约 ¥${(baseSalary / 12).toLocaleString(undefined, { maximumFractionDigits: 0 })}/月` : `年薪约 ¥${(baseSalary * 12).toLocaleString()}`}
+            </p>
           </div>
         </div>
       </motion.section>
@@ -420,7 +434,7 @@ export default function CalculatorView({ settings, setSettings, onSave }: Calcul
                 whileHover={{ scale: 1.01, backgroundColor: 'var(--color-primary-light)' }}
                 whileTap={{ scale: 0.98 }}
                 onClick={handleSave}
-                className="w-full h-15 bg-primary text-pure-white rounded-[24px] font-bold text-base flex items-center justify-center gap-3 shadow-[0_10px_30px_rgba(0,122,255,0.3)] transition-all relative overflow-hidden group/btn"
+                className="w-full h-15 bg-primary text-white rounded-[24px] font-bold text-base flex items-center justify-center gap-3 shadow-[0_10px_30px_rgba(0,122,255,0.3)] transition-all relative overflow-hidden group/btn"
               >
                 <div className="absolute inset-0 bg-linear-to-r from-white/0 via-white/10 to-white/0 -translate-x-full group-hover/btn:translate-x-full transition-transform duration-700" />
                 <Save className="w-5 h-5" />

@@ -21,7 +21,7 @@ interface OnboardingGuideProps {
 const STEPS = [
   {
     id: 'welcome',
-    title: '欢迎使用提薪宝',
+    title: '欢迎使用 PayTrack',
     description: '一个能让你看到每一秒都在赚钱的效率神器。只需简单几步，即可开启实时计薪之旅。',
     icon: <Zap className="w-12 h-12 text-primary" />,
   },
@@ -84,8 +84,8 @@ export default function OnboardingGuide({ onComplete, initialSettings }: Onboard
                 <span className="absolute left-6 top-1/2 -translate-y-1/2 text-2xl font-black text-primary/30">¥</span>
                 <input
                   type="number"
-                  value={settings.salaryAmount || ''}
-                  onChange={(e) => setSettings({ ...settings, salaryAmount: Number(e.target.value) })}
+                  value={settings.baseSalary || ''}
+                  onChange={(e) => setSettings({ ...settings, baseSalary: Number(e.target.value) })}
                   className="w-full glass-elevated py-6 pl-12 pr-6 rounded-[24px] text-3xl font-black text-zinc-900 focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all"
                   placeholder="20000"
                   autoFocus
@@ -171,11 +171,11 @@ export default function OnboardingGuide({ onComplete, initialSettings }: Onboard
               </div>
               <div className="flex justify-between items-center">
                 <span className="font-bold text-zinc-600">个人公积金比例</span>
-                <span className="text-primary font-black">12%</span>
+                <span className="text-primary font-black">{settings.housingRate}%</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="font-bold text-zinc-600">个人社保比例</span>
-                <span className="text-primary font-black">10.5%</span>
+                <span className="font-bold text-zinc-600">医疗/养老/失业保险总计</span>
+                <span className="text-primary font-black">{(settings.pensionRate + settings.medicalRate + settings.unemploymentRate).toFixed(1)}%</span>
               </div>
               <p className="text-[10px] text-zinc-400 leading-relaxed italic">
                 * 默认基数为当前月薪，可在后期进行进阶设置。

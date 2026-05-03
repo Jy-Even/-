@@ -232,7 +232,7 @@ export default function SalarySettingsView({ settings, onSave, onBack }: SalaryS
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={handleSave}
-          className="w-full h-14 bg-primary text-pure-white rounded-2xl font-black text-sm flex items-center justify-center gap-2 shadow-xl shadow-primary/25"
+          className="w-full h-14 bg-primary text-white rounded-2xl font-black text-sm flex items-center justify-center gap-2 shadow-xl shadow-primary/25"
         >
           保存配置
         </motion.button>

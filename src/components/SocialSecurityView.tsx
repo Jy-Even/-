@@ -12,20 +12,30 @@ import {
 } from 'lucide-react';
 import { cn, formatCurrency } from '../lib/utils';
 
+import { SalarySettings } from '../types';
+
 interface SocialSecurityViewProps {
-  baseSalary: number;
+  settings: SalarySettings;
+  setSettings: (settings: SalarySettings) => void;
   onBack: () => void;
 }
 
-export default function SocialSecurityView({ baseSalary, onBack }: SocialSecurityViewProps) {
-  const [pensionRate, setPensionRate] = useState(8);
-  const [medicalRate, setMedicalRate] = useState(2);
-  const [unemploymentRate, setUnemploymentRate] = useState(0.5);
-  const [housingRate, setHousingRate] = useState(7);
+export default function SocialSecurityView({ settings, setSettings, onBack }: SocialSecurityViewProps) {
+  const { 
+    baseSalary, 
+    pensionRate, 
+    medicalRate, 
+    unemploymentRate, 
+    housingRate 
+  } = settings;
 
   const calculate = (rate: number) => (baseSalary * rate) / 100;
 
   const totalDeduction = calculate(pensionRate) + calculate(medicalRate) + calculate(unemploymentRate) + calculate(housingRate);
+
+  const updateRate = (field: keyof SalarySettings, value: number) => {
+    setSettings({ ...settings, [field]: value });
+  };
 
   return (
     <div className="flex flex-col gap-6 px-5 pb-32 pt-10">
@@ -52,17 +62,17 @@ export default function SocialSecurityView({ baseSalary, onBack }: SocialSecurit
         <h3 className="text-[13px] font-bold text-zinc-400 uppercase tracking-[0.2em] pl-2">详细扣费比例</h3>
         
         <div className="glass rounded-3xl p-5 space-y-6 shadow-sm">
-          <RateSlider label="养老保险" icon={<Building className="w-5 h-5" />} value={pensionRate} onChange={setPensionRate} amount={calculate(pensionRate)} tooltip="为退休后的生活提供基本保障，按缴费基数 8% 计入个人账户。" />
-          <RateSlider label="医疗保险" icon={<HeartPulse className="w-5 h-5" />} value={medicalRate} onChange={setMedicalRate} amount={calculate(medicalRate)} tooltip="用于门诊医疗费用报销和住院统筹。个人缴纳部分通常进入个人医保卡账户。" />
-          <RateSlider label="失业保险" icon={<Briefcase className="w-5 h-5" />} value={unemploymentRate} onChange={setUnemploymentRate} amount={calculate(unemploymentRate)} tooltip="非本人意愿中断就业时，可申领失业保险金，通常个人缴纳比例较低。" />
-          <RateSlider label="住房公积金" icon={<LineChart className="w-5 h-5" />} value={housingRate} onChange={setHousingRate} amount={calculate(housingRate)} color="text-primary" tooltip="长期住房储金，可用于购房贷款优惠、租房支取等，个人与公司等额缴纳。" />
+          <RateSlider label="养老保险" icon={<Building className="w-5 h-5" />} value={pensionRate} onChange={(v) => updateRate('pensionRate', v)} amount={calculate(pensionRate)} tooltip="为退休后的生活提供基本保障，按缴费基数 8% 计入个人账户。" />
+          <RateSlider label="医疗保险" icon={<HeartPulse className="w-5 h-5" />} value={medicalRate} onChange={(v) => updateRate('medicalRate', v)} amount={calculate(medicalRate)} tooltip="用于门诊医疗费用报销和住院统筹。个人缴纳部分通常进入个人医保卡账户。" />
+          <RateSlider label="失业保险" icon={<Briefcase className="w-5 h-5" />} value={unemploymentRate} onChange={(v) => updateRate('unemploymentRate', v)} amount={calculate(unemploymentRate)} tooltip="非本人意愿中断就业时，可申领失业保险金，通常个人缴纳比例较低。" />
+          <RateSlider label="住房公积金" icon={<LineChart className="w-5 h-5" />} value={housingRate} onChange={(v) => updateRate('housingRate', v)} amount={calculate(housingRate)} color="text-primary" tooltip="长期住房储金，可用于购房贷款优惠、租房支取等，个人与公司等额缴纳。" />
         </div>
 
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={onBack}
-          className="w-full h-14 bg-primary text-pure-white rounded-2xl font-black text-sm flex items-center justify-center gap-3 shadow-xl shadow-primary/25 mt-4"
+          className="w-full h-14 bg-primary text-white rounded-2xl font-black text-sm flex items-center justify-center gap-3 shadow-xl shadow-primary/25 mt-4"
         >
           确认配置
         </motion.button>

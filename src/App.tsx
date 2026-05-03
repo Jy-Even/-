@@ -34,6 +34,9 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import { ViewType, SalarySettings, SalaryRecord, MonthlySalary } from './types';
 import { cn, formatCurrency } from './lib/utils';
+import { auth, db } from './lib/firebase';
+import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
 
 // --- Views ---
 import HomeView from './components/HomeView';
@@ -54,6 +57,10 @@ const INITIAL_SETTINGS: SalarySettings = {
   salaryMode: 'Monthly',
   scheduleType: 'Double',
   dailyHours: 8.0,
+  pensionRate: 8,
+  medicalRate: 2,
+  unemploymentRate: 0.5,
+  housingRate: 12,
 };
 
 const MOCK_RECORDS: SalaryRecord[] = [
@@ -81,6 +88,32 @@ export default function App() {
   const [history, setHistory] = useState<MonthlySalary[]>(MOCK_HISTORY);
   const [selectedHistoryId, setSelectedHistoryId] = useState<string | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [user, setUser] = useState<FirebaseUser | null>(null);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      setUser(currentUser);
+      if (currentUser) {
+        // Fetch user data from Firestore
+        try {
+          const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+          if (userDoc.exists()) {
+            const data = userDoc.data();
+            setSettings({
+              ...INITIAL_SETTINGS,
+              ...data,
+            });
+          }
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+        }
+      }
+      setIsInitialLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     const completed = localStorage.getItem('onboarding-completed');
@@ -95,20 +128,30 @@ export default function App() {
     localStorage.setItem('onboarding-completed', 'true');
   };
 
-  const [theme, setTheme] = useState<'system'|'light'|'dark'|'midnight'>(() => {
+  const [theme, setTheme] = useState<'system'|'light'|'dark'|'midnight'|'oled'|'forest'|'cyberpunk'|'sepia'|'nord'>(() => {
     return (localStorage.getItem('app-theme') as any) || 'system';
   });
 
   useEffect(() => {
     localStorage.setItem('app-theme', theme);
     const root = document.documentElement;
-    root.classList.remove('light', 'dark', 'theme-midnight');
+    root.classList.remove('light', 'dark', 'theme-midnight', 'theme-oled', 'theme-forest', 'theme-cyberpunk', 'theme-sepia', 'theme-nord');
 
     if (theme === 'system') {
       const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
       root.classList.add(systemTheme);
     } else if (theme === 'midnight') {
       root.classList.add('dark', 'theme-midnight');
+    } else if (theme === 'oled') {
+      root.classList.add('dark', 'theme-oled');
+    } else if (theme === 'forest') {
+      root.classList.add('theme-forest');
+    } else if (theme === 'cyberpunk') {
+      root.classList.add('dark', 'theme-cyberpunk');
+    } else if (theme === 'sepia') {
+      root.classList.add('theme-sepia');
+    } else if (theme === 'nord') {
+      root.classList.add('dark', 'theme-nord');
     } else {
       root.classList.add(theme);
     }
@@ -165,7 +208,7 @@ export default function App() {
       case 'salarySettings':
         return <SalarySettingsView settings={settings} onSave={setSettings} onBack={() => setActiveView('profile')} />;
       case 'socialSecurity':
-        return <SocialSecurityView baseSalary={settings.baseSalary} onBack={() => setActiveView('profile')} />;
+        return <SocialSecurityView settings={settings} setSettings={setSettings} onBack={() => setActiveView('profile')} />;
       case 'appearanceSettings':
         return <AppearanceSettingsView theme={theme} setTheme={setTheme} onBack={() => setActiveView('profile')} />;
       case 'realtimeSalary':
@@ -237,7 +280,7 @@ export default function App() {
 
       {/* Bottom Navigation */}
       {activeView !== 'realtimeSalary' && (
-        <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-md z-50 bg-white/90 backdrop-blur-xl border border-white shadow-2xl shadow-zinc-200/50 h-[72px] rounded-full flex justify-around items-center px-2">
+        <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-md z-50 glass shadow-2xl h-[72px] rounded-full flex justify-around items-center px-2">
           <NavButton 
             active={activeView === 'home'} 
             onClick={() => setActiveView('home')} 

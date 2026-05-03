@@ -1,0 +1,58 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Common helpers
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Validation for User Settings
+    function isValidUserSettings(data) {
+      return data.keys().hasAll(['baseSalary', 'salaryMode', 'scheduleType', 'dailyHours']) &&
+             data.baseSalary is number && data.baseSalary >= 0 &&
+             data.salaryMode in ['Monthly', 'Annual'] &&
+             data.scheduleType in ['Double', 'Single', 'Big-Small'] &&
+             data.dailyHours is number && data.dailyHours > 0 && data.dailyHours <= 24;
+    }
+
+    // User Profile / Settings
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUserSettings(request.resource.data);
+      allow update: if isOwner(userId) && isValidUserSettings(request.resource.data) &&
+                      request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+                        'baseSalary', 'salaryMode', 'scheduleType', 'dailyHours', 
+                        'pensionRate', 'medicalRate', 'unemploymentRate', 'housingRate', 'updatedAt'
+                      ]);
+      
+      // Records subcollection
+      match /records/{recordId} {
+        function isValidSalaryRecord(data) {
+          return data.keys().hasAll(['id', 'date', 'type', 'subtype', 'duration', 'estimatedPay']) &&
+                 data.id is string && data.date is string &&
+                 data.type in ['Overtime', 'Leave', 'Comp', 'Regular', 'Penalty'] &&
+                 data.subtype in ['Workday', 'Weekend', 'Holiday', 'Late', 'Unpaid'] &&
+                 data.duration is number && data.estimatedPay is number;
+        }
+
+        allow list, get: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(recordId) && isValidSalaryRecord(request.resource.data);
+        allow update: if isOwner(userId) && isValidSalaryRecord(request.resource.data);
+        allow delete: if isOwner(userId);
+      }
+    }
+  }
+}
