@@ -38,19 +38,34 @@ import { auth, db } from './lib/firebase';
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 
-// --- Views ---
-import HomeView from './components/HomeView';
-import CalculatorView from './components/CalculatorView';
-import HistoryView from './components/HistoryView';
-import ProfileView from './components/ProfileView';
-import CalendarView from './components/CalendarView';
-import SalarySettingsView from './components/SalarySettingsView';
-import SocialSecurityView from './components/SocialSecurityView';
-import SalaryDetailView from './components/SalaryDetailView';
-import SalaryEditView from './components/SalaryEditView';
-import AppearanceSettingsView from './components/AppearanceSettingsView';
-import RealtimeSalaryView from './components/RealtimeSalaryView';
-import OnboardingGuide from './components/OnboardingGuide';
+// --- Views (Memoized for performance) ---
+const HomeView = React.lazy(() => import('./components/HomeView'));
+const CalculatorView = React.memo(React.lazy(() => import('./components/CalculatorView')));
+const HistoryView = React.memo(React.lazy(() => import('./components/HistoryView')));
+const ProfileView = React.memo(React.lazy(() => import('./components/ProfileView')));
+const CalendarView = React.memo(React.lazy(() => import('./components/CalendarView')));
+const SalarySettingsView = React.memo(React.lazy(() => import('./components/SalarySettingsView')));
+const SocialSecurityView = React.memo(React.lazy(() => import('./components/SocialSecurityView')));
+const SalaryDetailView = React.memo(React.lazy(() => import('./components/SalaryDetailView')));
+const SalaryEditView = React.memo(React.lazy(() => import('./components/SalaryEditView')));
+const AppearanceSettingsView = React.memo(React.lazy(() => import('./components/AppearanceSettingsView')));
+const RealtimeSalaryView = React.lazy(() => import('./components/RealtimeSalaryView'));
+const OnboardingGuide = React.memo(React.lazy(() => import('./components/OnboardingGuide')));
+
+const LoadingSkeleton = React.memo(() => (
+  <div className="w-full max-w-lg mx-auto flex flex-col gap-6 px-5 py-4 animate-pulse">
+    <div className="h-48 w-full glass-elevated rounded-[40px] bg-zinc-100" />
+    <div className="grid grid-cols-2 gap-4">
+      <div className="h-24 w-full glass-elevated rounded-3xl bg-zinc-100" />
+      <div className="h-24 w-full glass-elevated rounded-3xl bg-zinc-100" />
+    </div>
+    <div className="space-y-4 pt-4">
+      <div className="h-12 w-1/3 glass-elevated rounded-xl bg-zinc-100" />
+      <div className="h-20 w-full glass-elevated rounded-2xl bg-zinc-100" />
+      <div className="h-20 w-full glass-elevated rounded-2xl bg-zinc-100" />
+    </div>
+  </div>
+));
 
 const INITIAL_SETTINGS: SalarySettings = {
   baseSalary: 15000,
@@ -264,18 +279,23 @@ export default function App() {
 
       {/* Main Content Area */}
       <main className="flex-1 pb-32 relative z-0">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeView}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
-            className="w-full max-w-lg mx-auto"
-          >
-            {renderView()}
-          </motion.div>
-        </AnimatePresence>
+        <React.Suspense fallback={<LoadingSkeleton />}>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeView}
+              initial={{ opacity: 0, scale: 0.98, filter: 'blur(8px)' }}
+              animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+              exit={{ opacity: 0, scale: 1.02, filter: 'blur(8px)' }}
+              transition={{ 
+                duration: 0.4, 
+                ease: [0.16, 1, 0.3, 1] 
+              }}
+              className="w-full max-w-lg mx-auto"
+            >
+              {renderView()}
+            </motion.div>
+          </AnimatePresence>
+        </React.Suspense>
       </main>
 
       {/* Bottom Navigation */}

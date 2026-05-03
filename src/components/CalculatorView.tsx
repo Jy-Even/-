@@ -34,7 +34,7 @@ const ITEM_VARIANTS = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } }
 };
 
-export default function CalculatorView({ settings, setSettings, onSave }: CalculatorViewProps) {
+export default React.memo(function CalculatorView({ settings, setSettings, onSave }: CalculatorViewProps) {
   const [activeMode, setActiveMode] = useState<'Monthly' | 'Annual'>(settings.salaryMode);
   const [activeSchedule, setActiveSchedule] = useState(settings.scheduleType);
   const [hours, setHours] = useState(settings.dailyHours);
@@ -50,6 +50,7 @@ export default function CalculatorView({ settings, setSettings, onSave }: Calcul
   const [overtimeStart, setOvertimeStart] = useState('18:00');
   const [overtimeEnd, setOvertimeEnd] = useState('21:00');
   const [overtimeType, setOvertimeType] = useState<'Workday' | 'Weekend' | 'Holiday'>('Workday');
+  const [manualPay, setManualPay] = useState<string>('');
 
   const getDaysPerMonth = (type: string) => {
     switch (type) {
@@ -59,39 +60,50 @@ export default function CalculatorView({ settings, setSettings, onSave }: Calcul
     }
   };
 
-  const daysPerMonth = getDaysPerMonth(activeSchedule);
-  const dailyPay = baseSalary / daysPerMonth;
-  const hourlyPay = hours > 0 ? dailyPay / hours : 0;
-  const socialSecurity = baseSalary * 0.225;
-  const netSalary = Math.max(0, baseSalary - socialSecurity);
+  const payrollStats = React.useMemo(() => {
+    const days = getDaysPerMonth(activeSchedule);
+    const dailyPay = baseSalary / days;
+    const hourly = hours > 0 ? dailyPay / hours : 0;
+    const ss = baseSalary * 0.225;
+    const net = Math.max(0, baseSalary - ss);
+    return { days, dailyPay, hourly, ss, net };
+  }, [baseSalary, activeSchedule, hours]);
 
-  const setWorkPreset = (h: number, schedule: 'Double' | 'Single' | 'Big-Small') => {
+  const { days: daysPerMonth, dailyPay, hourly: hourlyPay, ss: socialSecurity, net: netSalary } = payrollStats;
+
+  const setWorkPreset = React.useCallback((h: number, schedule: 'Double' | 'Single' | 'Big-Small') => {
     setHours(h);
     setActiveSchedule(schedule);
     setSettings({ ...settings, dailyHours: h, scheduleType: schedule });
-  };
+  }, [settings, setSettings]);
 
-  const startDate = new Date(`2000-01-01T${overtimeStart}`);
-  const endDate = new Date(`2000-01-01T${overtimeEnd}`);
-  let duration = (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60);
-  if (duration < 0) duration += 24; // next day
-  if (duration < 0 || isNaN(duration)) duration = 0;
+  const calculatedOvertimePay = React.useMemo(() => {
+    const startDate = new Date(`2000-01-01T${overtimeStart}`);
+    const endDate = new Date(`2000-01-01T${overtimeEnd}`);
+    let dur = (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60);
+    if (dur < 0) dur += 24;
+    if (dur < 0 || isNaN(dur)) dur = 0;
+    
+    const multiplier = overtimeType === 'Workday' ? 1.5 : overtimeType === 'Weekend' ? 2 : 3;
+    const pay = hourlyPay * dur * multiplier;
+    return { dur, pay };
+  }, [overtimeStart, overtimeEnd, overtimeType, hourlyPay]);
 
-  const multiplier = overtimeType === 'Workday' ? 1.5 : overtimeType === 'Weekend' ? 2 : 3;
-  const overtimePay = hourlyPay * duration * multiplier;
+  const finalOvertimePay = manualPay !== '' ? parseFloat(manualPay) : calculatedOvertimePay.pay;
 
-  const handleSaveOvertime = () => {
+  const handleSaveOvertime = React.useCallback(() => {
     onSave({
       id: Math.random().toString(36).substr(2, 9),
       date: new Date().toISOString().split('T')[0],
       type: 'Overtime',
       subtype: overtimeType,
-      duration: duration,
-      estimatedPay: overtimePay
+      duration: calculatedOvertimePay.dur,
+      estimatedPay: finalOvertimePay
     });
     setShowOvertimeForm(false);
+    setManualPay('');
     triggerToast();
-  };
+  }, [onSave, overtimeType, calculatedOvertimePay.dur, finalOvertimePay]);
 
   const handleSaveAttendance = (type: 'Regular' | 'Late' | 'Leave') => {
     if (type === 'Regular') {
@@ -276,20 +288,35 @@ export default function CalculatorView({ settings, setSettings, onSave }: Calcul
           </div>
 
           <div className="flex flex-col gap-3">
-            <span className="text-sm font-bold text-zinc-500 pl-1 uppercase tracking-wide">排班类型</span>
-            <div className="bg-zinc-100 p-1 rounded-2xl flex gap-1 inner-shadow">
-              <ToggleOption active={activeSchedule === 'Double'} onClick={() => {
-                setActiveSchedule('Double');
-                setSettings({ ...settings, scheduleType: 'Double' });
-              }} label="双休" />
-              <ToggleOption active={activeSchedule === 'Single'} onClick={() => {
-                setActiveSchedule('Single');
-                setSettings({ ...settings, scheduleType: 'Single' });
-              }} label="单休" />
-              <ToggleOption active={activeSchedule === 'Big-Small'} onClick={() => {
-                setActiveSchedule('Big-Small');
-                setSettings({ ...settings, scheduleType: 'Big-Small' });
-              }} label="大小周" />
+            <span className="text-[11px] font-black text-zinc-400 uppercase tracking-[0.2em] pl-1">排班模式</span>
+            <div className="grid grid-cols-3 gap-2">
+              <ScheduleOption 
+                active={activeSchedule === 'Double'} 
+                onClick={() => {
+                  setActiveSchedule('Double');
+                  setSettings({ ...settings, scheduleType: 'Double' });
+                }} 
+                label="标准双休" 
+                sub="21.75天"
+              />
+              <ScheduleOption 
+                active={activeSchedule === 'Single'} 
+                onClick={() => {
+                  setActiveSchedule('Single');
+                  setSettings({ ...settings, scheduleType: 'Single' });
+                }} 
+                label="固定单休" 
+                sub="26天"
+              />
+              <ScheduleOption 
+                active={activeSchedule === 'Big-Small'} 
+                onClick={() => {
+                  setActiveSchedule('Big-Small');
+                  setSettings({ ...settings, scheduleType: 'Big-Small' });
+                }} 
+                label="大小周" 
+                sub="24天"
+              />
             </div>
           </div>
 
@@ -566,14 +593,32 @@ export default function CalculatorView({ settings, setSettings, onSave }: Calcul
                   </div>
                 </div>
 
-                <div className="bg-primary/5 rounded-2xl p-4 flex justify-between items-center mt-2 border border-primary/10">
-                  <div className="flex flex-col">
-                    <span className="text-xs font-bold text-primary/70 mb-1">预计加班时长</span>
-                    <span className="text-lg font-black text-primary">{duration.toFixed(1)} <span className="text-sm">小时</span></span>
+                <div className="bg-primary/5 rounded-2xl p-4 flex flex-col gap-4 border border-primary/10">
+                  <div className="flex justify-between items-center">
+                    <div className="flex flex-col">
+                      <span className="text-xs font-bold text-primary/70 mb-1">预计加班时长</span>
+                      <span className="text-lg font-black text-primary">{calculatedOvertimePay.dur.toFixed(1)} <span className="text-sm">小时</span></span>
+                    </div>
+                    <div className="flex flex-col text-right">
+                      <span className="text-xs font-bold text-primary/70 mb-1">系统预估补贴</span>
+                      <span className="text-lg font-black text-primary tabular-nums">+{formatCurrency(calculatedOvertimePay.pay)}</span>
+                    </div>
                   </div>
-                  <div className="flex flex-col text-right">
-                    <span className="text-xs font-bold text-primary/70 mb-1">预估加班费</span>
-                    <span className="text-2xl font-black text-primary tabular-nums">+{formatCurrency(overtimePay)}</span>
+                  
+                  <div className="h-[1px] bg-primary/10 w-full" />
+                  
+                  <div className="flex flex-col gap-2">
+                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest pl-1">手动调整金额 (可选)</label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 font-bold">¥</span>
+                      <input 
+                        type="number"
+                        value={manualPay}
+                        onChange={(e) => setManualPay(e.target.value)}
+                        placeholder={calculatedOvertimePay.pay.toFixed(2)}
+                        className="w-full bg-white border border-zinc-200 rounded-xl pl-8 pr-4 py-3 font-bold text-zinc-900 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      />
+                    </div>
                   </div>
                 </div>
                 
@@ -592,8 +637,35 @@ export default function CalculatorView({ settings, setSettings, onSave }: Calcul
       </AnimatePresence>
     </motion.div>
   );
-}
+});
 
+
+function ScheduleOption({ active, onClick, label, sub }: { active: boolean, onClick: () => void, label: string, sub: string }) {
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        "flex flex-col items-center justify-center py-4 rounded-3xl border-2 transition-all gap-1",
+        active 
+          ? "border-primary bg-primary/5 shadow-inner" 
+          : "border-zinc-100 bg-white hover:bg-zinc-50"
+      )}
+    >
+      <span className={cn("text-xs font-black transition-colors", active ? "text-primary" : "text-zinc-500")}>
+        {label}
+      </span>
+      <span className={cn("text-[9px] font-bold opacity-60", active ? "text-primary" : "text-zinc-400")}>
+        {sub}
+      </span>
+      {active && (
+        <motion.div 
+          layoutId="active-dot"
+          className="w-1.5 h-1.5 rounded-full bg-primary mt-1"
+        />
+      )}
+    </button>
+  );
+}
 
 function PresetButton({ label, sub, active, onClick }: { label: string, sub: string, active: boolean, onClick: () => void }) {
   return (

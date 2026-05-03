@@ -45,7 +45,7 @@ const CHART_DATA = [
   { name: '周日', value: 10, color: 'rgba(118, 118, 128, 0.12)' },
 ];
 
-export default function HomeView({ settings, accumulated, perSecond, onAction }: HomeViewProps) {
+export default React.memo(function HomeView({ settings, accumulated, perSecond, onAction }: HomeViewProps) {
   return (
     <motion.div 
       initial="hidden"
@@ -268,7 +268,7 @@ export default function HomeView({ settings, accumulated, perSecond, onAction }:
       </motion.section>
     </motion.div>
   );
-}
+});
 
 function ActionButton({ icon, label, color, onClick }: { icon: React.ReactNode, label: string, color: string, onClick?: () => void }) {
   return (
